@@ -13,7 +13,7 @@ module Control_Unit(
 );
 
 always @(instruction) begin
-//signals defiinition
+//signals definition
 end
 
 endmodule
