@@ -1,5 +1,5 @@
 module CU_mux(
-    input SS,
+    input S,
     input [3:0] mux_opcode,
     input mux_AM,
           mux_S_enable,
@@ -23,7 +23,7 @@ module CU_mux(
 );
 
 always @(*) begin
-    if(SS) begin
+    if(S) begin
         ID_opcode = 4'b0000;
         ID_AM = 1'b0;
         ID_S_enable = 1'b0;
