@@ -4,10 +4,16 @@ module clock_gen(
 
     initial begin
         clk = 0;
+        #40 $finish;
+
     end
 
     always begin
-        #5 clk = ~clk; // Toggle the clock every 5 time units for a 10-time-unit period
+        #1 clk = ~clk; // Toggle the clock every 2 time units
+    end
+
+       always @(posedge clk) begin
+        $display("Clock has a positive edge at time %0t", $time);
     end
 
 endmodule
