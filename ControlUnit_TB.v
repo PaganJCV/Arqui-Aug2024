@@ -1,5 +1,6 @@
 module CU_tb;
     reg clk, R, LE;
+    reg [31:0] dataIN;
     integer fi, code;
     //PC 
     reg [7:0] in_pc;
@@ -90,7 +91,9 @@ PC pc_tb(clk, R, LE, .in_pc(result), out_pc);
 
 PC_adder adder_tb(.num(out_pc), result);
 
-ROM rom(.address(out_pc), Instruction);
+assign address <= out_pc;
+
+ROM rom(address, Instruction);
 
 IF_ID ifid(clk, R, .rom_instruction(Instruction), LE, instruction);
 
@@ -166,14 +169,14 @@ initial begin
     R = 1;
     LE = 1;
     S = 0;
-    fi = $fopen("input_file.txt", "r");
-        A = 8'b00000000;
-        while (!$feof(fi)) begin
-            code = $fscanf(fi, "%b", DI);
-            ram.Mem[A] = DI;
-            A = A + 1;
-        end
-     $fclose(fi);
+    fi = $fopen("input_file.txt","r"); 
+    while (!$feof(fi)) 
+          begin 
+            code = $fscanf(fi, "%b", dataIN); 
+            rom.Mem[address] = dataIN;
+            address = address + 1;
+          end
+    $fclose(fi);
     // repeat (20) #2 clk = ~clk;
         #40 $finish;
         
