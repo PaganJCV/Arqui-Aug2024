@@ -162,17 +162,32 @@ MEM_WB memwb(clk, R, .in_MEM_RF_enable(MEM_RF_enable), WB_RF_enable);
 
 initial begin
     clk = 0;
-    rst = 1;
+    #2 clk = ~clk; // Toggle the clock every 2 time units
+    R = 1;
     LE = 1;
     S = 0;
+    fi = $fopen("input_file.txt", "r");
+        A = 8'b00000000;
+        while (!$feof(fi)) begin
+            code = $fscanf(fi, "%b", DI);
+            ram.Mem[A] = DI;
+            A = A + 1;
+        end
+     $fclose(fi);
     // repeat (20) #2 clk = ~clk;
+        #40 $finish;
+        
+
+        #3 //3
+        R = 0;
+
+        #29 //3 + 29 = 32
+        S = 1;
 end
 
-    begin
-        #40 $finish;
-        #2 clk = ~clk; // Toggle the clock every 2 time units
-        if(clk == 32): S = 1;
-    end
+initial begin
+      $monitor("At time %t | A = %d | DO = %h | Size = %b | R/W = %b | E = %b", $time, A, DO, Size, RW, E);
+end
 
 
 endmodule
