@@ -1,5 +1,6 @@
 module CU_tb;
     reg clk, R, LE;
+    reg [31:0] dataIN;
     integer fi, code;
     //PC 
     reg [7:0] in_pc;
@@ -90,7 +91,9 @@ PC pc_tb(clk, R, LE, .in_pc(result), out_pc);
 
 PC_adder adder_tb(.num(out_pc), result);
 
-ROM rom(.address(out_pc), Instruction);
+assign address <= out_pc;
+
+ROM rom(address, Instruction);
 
 IF_ID ifid(clk, R, .rom_instruction(Instruction), LE, instruction);
 
@@ -165,21 +168,20 @@ initial begin
     R = 1;
     LE = 1;
     S = 0;
-    fi = $fopen("input_file.txt", "r");
-        A = 8'b00000000;
-        while (!$feof(fi)) begin
-            code = $fscanf(fi, "%b", DI);
-            ram.Mem[A] = DI;
-            A = A + 1;
-        end
-     $fclose(fi);
+    fi = $fopen("input_file.txt","r"); 
+    while (!$feof(fi)) 
+          begin 
+            code = $fscanf(fi, "%b", dataIN); 
+            rom.Mem[address] = dataIN;
+            address = address + 1;
+          end
+    $fclose(fi);
 
-        #3 //3
+        #3; //3
         R = 0;
 
-        #29 //3 + 29 = 32
+        #29; //3 + 29 = 32
         S = 1;
-
         #8 $finish; //40
 
 end
@@ -188,9 +190,18 @@ always begin
        #2 clk = ~clk;
     end
 
-always begin
-    $monitor("At time %t | A = %d | DO = %h | Size = %b | R/W = %b | E = %b", $time, A, DO, Size, RW, E);
-    $display("Clock has a positive edge at time %0t, S = %d, R = %d", $time, S, R);
+
+initial begin
+      $display("IF_ID")
+      $monitor("At time %t | ID_opcode = %b | ID_AM = %b | ID_S_enable = %b | ID_load_instr= %b | ID_RF_enable = %b | ID_Size_enable = %b | ID_RW_enable = %b | ID_Enable_signal = %b | ID_BL_instr = %b | ID_B_instr = %b" , $time, ID_opcode, ID_AM,
+               ID_S_enable,
+               ID_load_instr,
+               ID_RF_enable,
+               ID_Size_enable,
+               ID_RW_enable,
+               ID_Enable_signal,
+               ID_BL_instr,
+               ID_B_instr);
 end
 
 
