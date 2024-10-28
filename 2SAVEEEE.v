@@ -5,8 +5,8 @@ module PC(
 );
 
 always @(posedge clk) begin
-    if(LE) out_pc <= in_pc;
-    else if (R) out_pc <= 8'b00000000;
+  if(LE == 1) out_pc = in_pc;
+  else if (R == 1) out_pc = 8'b00000000;
 end
 
 endmodule
@@ -16,7 +16,7 @@ module PC_adder(
     output reg [7:0] result
 );
 
-always @(num) result <= num + 3'b100;
+always @(num) result = num + 3'b100;
 
 endmodule
 

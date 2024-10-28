@@ -12,7 +12,7 @@ module CU_tb;
   
   	//ROM
   reg [7:0] address;
-  output reg [31:0] Instruction;
+  wire [31:0] Instruction;
 
     //IF_ID 
     reg [31:0] rom_instruction;
@@ -88,12 +88,12 @@ module CU_tb;
     reg in_MEM_RF_enable;
     wire WB_RF_enable;
 
-  PC pc_tb(.clk(clk), .R(R), .LE(LE), .in_pc(in_pc), .out_pc(out_pc));
+  PC pc_tb(.clk(clk), .R(R), .LE(LE), .in_pc(result), .out_pc(out_pc));
 
   PC_adder adder_tb(.num(out_pc), .result(result));
-//assign address = result;
+  
 
-  ROM rom(.address(address), .instruction(Instruction));
+  ROM rom(.address(out_pc),.instruction(Instruction));
 
   IF_ID ifid(.clk(clk), .R(R), .rom_instruction(Instruction), .LE(LE), .Instruction(instruction));
 
@@ -161,27 +161,38 @@ module CU_tb;
                       
   MEM_WB memwb(.clk(clk), .R(R), .in_MEM_RF_enable(in_MEM_RF_enable), .WB_RF_enable(WB_RF_enable));
                     
-
+integer read_counter = 0;
 initial begin
   clk = 0;
-  forever #2 clk = ~clk; // Toggle the clock every 2 time units
+  num = 0;
+  fi = $fopen("input_file.txt","r");
+  repeat (20) #2 clk = ~clk; // Toggle the clock every 2 time units
   
 end
   
+always @(posedge clk) begin
+  address = out_pc;
+    if (!$feof(fi)) begin
+        // Solo lee cada 2 ciclos de reloj
+        if (read_counter == 1) begin
+            code = $fscanf(fi, "%b", dataIN);
+            rom.Mem[address] = dataIN;
+            address = address + 1;
+            read_counter = 0; // Reinicia el contador
+        end else begin
+            read_counter = read_counter + 1; // Incrementa el contador
+        end
+    end else begin
+        $fclose(fi); // Cierra el archivo al final de la lectura
+    end
+end
+  
 initial begin
-    
+    //address = out_pc;
     R = 1;
     LE = 1;
     S = 0;
-    fi = $fopen("input_file.txt","r"); 
-    while (!$feof(fi)) 
-          begin 
-            code = $fscanf(fi, "%b", dataIN); 
-            rom.Mem[address] = dataIN;
-            address = address + 1;
-          end
-    $fclose(fi);
-    // repeat (20) #2 clk = ~clk;
+    
         //#40 $finish;
         
 
@@ -191,14 +202,11 @@ initial begin
         #29; //3 + 29 = 32
         S = 1;
 
-        #8;
-        $stop;
-
 end
 
 initial begin
   $display("IF_ID");
-  $monitor("\nAt time %t | ID_opcode = %b | ID_AM = %b | ID_S_enable = %b | ID_load_instr= %b | ID_RF_enable = %b | ID_Size_enable = %b | ID_RW_enable = %b | ID_Enable_signal = %b | ID_BL_instr = %b | ID_B_instr = %b", $time, ID_opcode, ID_AM,
+  $monitor("\nAt time %t | PC: %d | clk: %d | instruction: %b | ID_opcode = %b | ID_AM = %b | ID_S_enable = %b | ID_load_instr= %b | ID_RF_enable = %b | ID_Size_enable = %b | ID_RW_enable = %b | ID_Enable_signal = %b | ID_BL_instr = %b | ID_B_instr = %b", $time, out_pc, clk, in_instruction, ID_opcode, ID_AM,
                ID_S_enable,
                ID_load_instr,
                ID_RF_enable,
