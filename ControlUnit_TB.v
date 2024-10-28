@@ -101,16 +101,18 @@ Control_Unit cu_tb(in_instruction, opcode,
                B_instr);
 
 
-
 initial begin
     clk = 0;
-    repeat (20) #2 clk = ~clk;
+    rst = 1;
+    LE = 1;
+    S = 0;
+    // repeat (20) #2 clk = ~clk;
 end
 
-    initial begin
-        clk = 0;
+    begin
         #40 $finish;
         #2 clk = ~clk; // Toggle the clock every 2 time units
+        if(clk == 32): S = 1;
     end
 
 
