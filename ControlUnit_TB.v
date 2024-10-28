@@ -162,7 +162,6 @@ MEM_WB memwb(clk, R, .in_MEM_RF_enable(MEM_RF_enable), WB_RF_enable);
 
 initial begin
     clk = 0;
-    #2 clk = ~clk; // Toggle the clock every 2 time units
     R = 1;
     LE = 1;
     S = 0;
@@ -174,19 +173,24 @@ initial begin
             A = A + 1;
         end
      $fclose(fi);
-    // repeat (20) #2 clk = ~clk;
-        #40 $finish;
-        
 
         #3 //3
         R = 0;
 
         #29 //3 + 29 = 32
         S = 1;
+
+        #8 $finish; //40
+
 end
 
-initial begin
-      $monitor("At time %t | A = %d | DO = %h | Size = %b | R/W = %b | E = %b", $time, A, DO, Size, RW, E);
+always begin
+       #2 clk = ~clk;
+    end
+
+always begin
+    $monitor("At time %t | A = %d | DO = %h | Size = %b | R/W = %b | E = %b", $time, A, DO, Size, RW, E);
+    $display("Clock has a positive edge at time %0t, S = %d, R = %d", $time, S, R);
 end
 
 
