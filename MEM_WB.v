@@ -6,7 +6,7 @@ module MEM_WB(
 
 always @(posedge clk) begin
     if(R) WB_RF_enable <= 1'b0;
-    else WB_RF_enable <= 1'b1;
+    else WB_RF_enable <= in_MEM_RF_enable;
 end
 
 endmodule
