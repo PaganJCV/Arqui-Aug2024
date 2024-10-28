@@ -1,8 +1,8 @@
 module Control_Unit(
     input [31:0] instruction;
     output reg[3:0] opcode;
-    output reg ID_AM;
-    output reg ID_S_enable,
+    output reg ID_AM,
+               ID_S_enable,
                ID_load_instr,
                ID_RF_enable,
                ID_Size_enable,
@@ -12,7 +12,7 @@ module Control_Unit(
                ID_B_instr
 );
 
-always @(instruction) begin
+always @(posedge clk) begin
 //signals definition
 end
 

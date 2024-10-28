@@ -1,11 +1,12 @@
-module IF_ID(
-    input IN, A, Size, R/W, E;
-    input [31:0] rom_instruction;
-    input [3:0] EX_Rd_or_14;
-    input ID_S_enable;
-
-    output reg [3:0] EX_Rd_or_14;
-    output reg PW, RW;
-    output reg [31:0] instruction
+module MEM_WB(
+    input clk, R;
+    input in_MEM_RF_enable;
+    output reg WB_RF_enable;
 );
+
+always @(posedge clk) begin
+    if(R) WB_RF_enable <= 1'b0;
+    else WB_RF_enable <= 1'b1;
+end
+
 endmodule
