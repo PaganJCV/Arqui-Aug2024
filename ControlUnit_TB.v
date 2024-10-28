@@ -5,11 +5,7 @@ module clock_gen(
     initial begin
         clk = 0;
         #40 $finish;
-
-    end
-
-    always begin
-        #1 clk = ~clk; // Toggle the clock every 2 time units
+        #2 clk = ~clk; // Toggle the clock every 2 time units
     end
 
        always @(posedge clk) begin
