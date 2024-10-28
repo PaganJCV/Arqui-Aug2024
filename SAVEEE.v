@@ -162,59 +162,50 @@ module CU_tb;
   MEM_WB memwb(.clk(clk), .R(R), .in_MEM_RF_enable(in_MEM_RF_enable), .WB_RF_enable(WB_RF_enable));
                     
 integer read_counter = 0;
-initial begin
-  clk = 0;
-  num = 0;
-  fi = $fopen("input_file.txt","r");
-  repeat (20) #2 clk = ~clk; // Toggle the clock every 2 time units
-  
-end
-  
-always @(posedge clk) begin
-  address = out_pc;
-    if (!$feof(fi)) begin
-        // Solo lee cada 2 ciclos de reloj
-        if (read_counter == 1) begin
+// Continuous Clock Generation
+    initial begin
+        clk = 0;
+      repeat(20) #2 clk = ~clk; // Toggle the clock every 2 time units continuously
+    end
+
+    // Control de Señales Iniciales
+    initial begin
+        R = 1; // Reset en 1 al inicio
+      //in_pc = 0;  
+      LE = 1; // Enable de PC e IF/ID
+        S = 0; // Multiplexor en 0
+        #3 R = 0; // Reset cambia a 0 en tiempo 3
+        #32 S = 1; // Multiplexor cambia a 1 en tiempo 32
+    end
+
+    // Precarga de la Memoria de Instrucciones
+    initial begin
+        fi = $fopen("input_file.txt", "r");
+        if (fi == 0) begin
+            $display("Error: No se pudo abrir el archivo input_file.txt");
+            $finish;
+        end
+        // Leer cada instrucción y cargar en ROM
+        address = 8'b00000000;
+        while (!$feof(fi)) begin
             code = $fscanf(fi, "%b", dataIN);
             rom.Mem[address] = dataIN;
             address = address + 1;
-            read_counter = 0; // Reinicia el contador
-        end else begin
-            read_counter = read_counter + 1; // Incrementa el contador
         end
-    end else begin
-        $fclose(fi); // Cierra el archivo al final de la lectura
+        $fclose(fi);
     end
-end
-  
-initial begin
-    //address = out_pc;
-    R = 1;
-    LE = 1;
-    S = 0;
-    
-        //#40 $finish;
-        
-
-        #3; //3
-        R = 0;
-
-        #29; //3 + 29 = 32
-        S = 1;
-
-end
 
 initial begin
   $display("IF_ID");
-  $monitor("\nAt time %t | PC: %d | clk: %d | instruction: %b | ID_opcode = %b | ID_AM = %b | ID_S_enable = %b | ID_load_instr= %b | ID_RF_enable = %b | ID_Size_enable = %b | ID_RW_enable = %b | ID_Enable_signal = %b | ID_BL_instr = %b | ID_B_instr = %b", $time, out_pc, clk, in_instruction, ID_opcode, ID_AM,
-               ID_S_enable,
-               ID_load_instr,
-               ID_RF_enable,
-               ID_Size_enable,
-               ID_RW_enable,
-               ID_Enable_signal,
-               ID_BL_instr,
-               ID_B_instr);
+  $monitor("\nAt time %t | PC: %d | clk: %d | instruction: %b | ID_opcode = %b | ID_AM = %b | ID_S_enable = %b | ID_load_instr= %b | ID_RF_enable = %b | ID_Size_enable = %b | ID_RW_enable = %b | ID_Enable_signal = %b | ID_BL_instr = %b | ID_B_instr = %b", $time, out_pc, clk, in_instruction, opcode, AM,
+               S_enable,
+               load_instr,
+               RF_enable,
+               Size_enable,
+               RW_enable,
+               Enable_signal,
+               BL_instr,
+               B_instr);
 end
 
 
