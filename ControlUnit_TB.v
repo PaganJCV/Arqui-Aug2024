@@ -165,7 +165,7 @@ MEM_WB memwb(clk, R, .in_MEM_RF_enable(MEM_RF_enable), WB_RF_enable);
 
 initial begin
     clk = 0;
-    #2 clk = ~clk; // Toggle the clock every 2 time units
+    forever #2 clk = ~clk; // Toggle the clock every 2 time units
     R = 1;
     LE = 1;
     S = 0;
@@ -181,15 +181,28 @@ initial begin
         #40 $finish;
         
 
-        #3 //3
+        #3; //3
         R = 0;
 
-        #29 //3 + 29 = 32
+        #29; //3 + 29 = 32
         S = 1;
+
+        #8;
+        $stop;
+
 end
 
-initial begin
-      $monitor("At time %t | A = %d | DO = %h | Size = %b | R/W = %b | E = %b", $time, A, DO, Size, RW, E);
+initial begin'
+      $display("IF_ID")
+      $monitor("At time %t | ID_opcode = %b | ID_AM = %b | ID_S_enable = %b | ID_load_instr= %b | ID_RF_enable = %b | ID_Size_enable = %b | ID_RW_enable = %b | ID_Enable_signal = %b | ID_BL_instr = %b | ID_B_instr = %b" , $time, ID_opcode, ID_AM,
+               ID_S_enable,
+               ID_load_instr,
+               ID_RF_enable,
+               ID_Size_enable,
+               ID_RW_enable,
+               ID_Enable_signal,
+               ID_BL_instr,
+               ID_B_instr);
 end
 
 
