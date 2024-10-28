@@ -87,41 +87,57 @@ always @(*) begin
   case(in_instruction[24:21])
         4'b0000: begin
             opcode = 4'b0110; //And	
+            RF_enable = 1'b1;
         end
         4'b0001: begin
             opcode = 4'b1000; //XOR
+            RF_enable = 1'b1;
         end
         4'b0010: begin
             opcode = 4'b0010; //A-B
+            RF_enable = 1'b1;
         end
          4'b0011: begin
             opcode = 4'b0100; //B-A
+            RF_enable = 1'b1;
         end
         4'b0100: begin
             opcode = 4'b0000; //A+B
+            RF_enable = 1'b1;
         end
         4'b0101: begin
             opcode = 4'b0001; //A+B+Cin
+            RF_enable = 1'b1;
         end
          4'b0110: begin
             opcode = 4'b0011; //A-B-Cin
+            RF_enable = 1'b1;
         end
         4'b0111: begin
             opcode = 4'b0101; //B-A-Cin
+            RF_enable = 1'b1;
         end
         4'b1100: begin
             opcode = 4'b0111; //OR
+            RF_enable = 1'b1;
         end
         4'b1101: begin
             opcode = 4'b1010; //B
+            RF_enable = 1'b1;
         end
         4'b1110: begin
             opcode = 4'b1100; //A and (notB)
+            RF_enable = 1'b1;
         end
         4'b1111: begin
             opcode = 4'b1011; //not B
+            RF_enable = 1'b1;
+
         end
-    default: opcode = 4'b1001; //A
+    default: begin
+    opcode = 4'b1001; 
+    RF_enable = 1'b1;//A
+    end
 endcase
 //Data processing in_instruction and bit 20 = 0, S_enable
 if((in_instruction[27:25] == 3'b000) && (in_instruction[7] == 1'b0) && (in_instruction[4] == 1'b1) && (in_instruction[20] == 1'b0)) S_enable = 1'b0;

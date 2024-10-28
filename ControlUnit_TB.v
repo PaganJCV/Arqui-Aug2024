@@ -10,9 +10,6 @@ module CU_tb;
     reg [7:0] num;
     wire [7:0] result;
 
-    //assign
-    assign num = ;
-
     //IF_ID 
     reg [31:0] rom_instruction;
     wire [31:0] instruction;
