@@ -5,8 +5,8 @@ module PC(
 );
 
 always @(posedge clk) begin
-    if(LE) out_pc <= in_pc;
-    else if (R) out_pc <= 8'b00000000;
+  if(LE == 1 && R == 0) out_pc = in_pc;
+  else if (R == 1) out_pc = 8'b00000000;
 end
 
 endmodule
@@ -16,7 +16,7 @@ module PC_adder(
     output reg [7:0] result
 );
 
-always @(num) result <= num + 3'b100;
+always @(num) result = num + 3'b100;
 
 endmodule
 
@@ -157,7 +157,7 @@ else if((in_instruction[27:25] == 3'b010)
             else if(!in_instruction[20] && !in_instruction[22]) begin load_instr = 1'b0; Size_enable = 1'b1; RW_enable = 1'b0; Enable_signal = 1'b1; RF_enable = 1'b1; end
         end
 //branch/branch and link
-else if(in_instruction[27:25] == 101) begin
+  else if(in_instruction[27:25] == 3'b101) begin
     if(in_instruction[24]) B_instr = 1'b1;
     else BL_instr =1'b1;
     end

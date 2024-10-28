@@ -13,7 +13,7 @@ module CU_tb;
   
   	//ROM
   reg [7:0] address;
-  wire [31:0] instruction;
+  wire [31:0] Instruction;
 
     //IF_ID 
     reg [31:0] rom_instruction;
@@ -89,12 +89,12 @@ module CU_tb;
     reg in_MEM_RF_enable;
     wire WB_RF_enable;
 
-  PC pc_tb(.clk(clk), .R(R), .LE(LE), .in_pc(in_pc), .out_pc(out_pc));
+  PC pc_tb(.clk(clk), .R(R), .LE(LE), .in_pc(result), .out_pc(out_pc));
 
   PC_adder adder_tb(.num(out_pc), .result(result));
-//assign address = result;
+  
 
-  ROM rom(.address(address), .instruction(Instruction));
+  ROM rom(.address(out_pc),.instruction(Instruction));
 
   IF_ID ifid(.clk(clk), .R(R), .rom_instruction(Instruction), .LE(LE), .Instruction(instruction));
 
@@ -162,38 +162,38 @@ module CU_tb;
                       
   MEM_WB memwb(.clk(clk), .R(R), .in_MEM_RF_enable(in_MEM_RF_enable), .WB_RF_enable(WB_RF_enable));
                     
+integer read_counter = 0;
+// Continuous Clock Generation
+    initial begin
+        clk = 0;
+      repeat(20) #2 clk = ~clk; // Toggle the clock every 2 time units continuously
+    end
 
-initial begin
-  clk = 0;
-  forever #2 clk = ~clk; // Toggle the clock every 2 time units
-  
-end
-  
-initial begin
-    
-    R = 1;
-    LE = 1;
-    S = 0;
-    fi = $fopen("input_file.txt","r"); 
-    while (!$feof(fi)) 
-          begin 
-            code = $fscanf(fi, "%b", dataIN); 
+    // Control de Señales Iniciales
+    initial begin
+        R = 1; // Reset en 1 al inicio
+      //in_pc = 0;  
+      LE = 1; // Enable de PC e IF/ID
+        S = 0; // Multiplexor en 0
+        #3 R = 0; // Reset cambia a 0 en tiempo 3
+        #32 S = 1; // Multiplexor cambia a 1 en tiempo 32
+    end
+
+    // Precarga de la Memoria de Instrucciones
+    initial begin
+        fi = $fopen("input_file.txt", "r");
+        if (fi == 0) begin
+            $display("Error: No se pudo abrir el archivo input_file.txt");
+            $finish;
+        end
+        // Leer cada instrucción y cargar en ROM
+        address = 8'b00000000;
+        while (!$feof(fi)) begin
+            code = $fscanf(fi, "%b", dataIN);
             rom.Mem[address] = dataIN;
             address = address + 1;
-          end
-    $fclose(fi);
-
-        #3; //3
-        R = 0;
-
-        #29; //3 + 29 = 32
-        S = 1;
-        #8 $finish; //40
-
-end
-
-always begin
-       #2 clk = ~clk;
+        end
+        $fclose(fi);
     end
 
 initial begin
@@ -224,6 +224,15 @@ initial begin
 
   $display(MEM_WB);
 
+  $monitor("\nAt time %t | PC: %d | clk: %d | instruction: %b | ID_opcode = %b | ID_AM = %b | ID_S_enable = %b | ID_load_instr= %b | ID_RF_enable = %b | ID_Size_enable = %b | ID_RW_enable = %b | ID_Enable_signal = %b | ID_BL_instr = %b | ID_B_instr = %b", $time, out_pc, clk, in_instruction, opcode, AM,
+               S_enable,
+               load_instr,
+               RF_enable,
+               Size_enable,
+               RW_enable,
+               Enable_signal,
+               BL_instr,
+               B_instr);
 end
 
 

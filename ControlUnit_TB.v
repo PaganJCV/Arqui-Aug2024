@@ -9,6 +9,10 @@ module CU_tb;
     //PC adder
     reg [7:0] num;
     wire [7:0] result;
+  
+  	//ROM
+  reg [7:0] address;
+  wire [31:0] Instruction;
 
     //IF_ID 
     reg [31:0] rom_instruction;
@@ -28,7 +32,7 @@ module CU_tb;
          B_instr;
 
     //CU mux
-    reg SS;
+    reg S;
     reg [3:0] mux_opcode;
     reg mux_AM,
         mux_S_enable,
@@ -82,19 +86,19 @@ module CU_tb;
     
     //MEM_WB
     reg in_MEM_RF_enable;
-    wire output reg WB_RF_enable;
+    wire WB_RF_enable;
 
-PC pc_tb(clk, R, LE, .in_pc(result), out_pc);
+  PC pc_tb(.clk(clk), .R(R), .LE(LE), .in_pc(result), .out_pc(out_pc));
 
-PC_adder adder_tb(.num(out_pc), result);
+  PC_adder adder_tb(.num(out_pc), .result(result));
+  
 
-assign address <= out_pc;
+  ROM rom(.address(out_pc),.instruction(Instruction));
 
-ROM rom(address, Instruction);
+  IF_ID ifid(.clk(clk), .R(R), .rom_instruction(Instruction), .LE(LE), .Instruction(instruction));
 
-IF_ID ifid(clk, R, .rom_instruction(Instruction), LE, instruction);
-
-Control_Unit cu_tb(.in_instruction(instruction), opcode, 
+  assign in_instruction = instruction;
+  Control_Unit cu_tb(in_instruction, opcode, 
                AM,
                S_enable,
                load_instr,
@@ -105,7 +109,7 @@ Control_Unit cu_tb(.in_instruction(instruction), opcode,
                BL_instr,
                B_instr);
 
-CU_mux  cu_mux_tb(S, .mux_opcode(opcode),  
+  CU_mux  cu_mux_tb(.S(S), .mux_opcode(opcode),  
                       .mux_AM(AM), 
                       .mux_S_enable(S_enable), 
                       .mux_load_instr(load_instr),
@@ -115,18 +119,18 @@ CU_mux  cu_mux_tb(S, .mux_opcode(opcode),
                       .mux_Enable_signal(Enable_signal),
                       .mux_BL_instr(BL_instr),
                       .mux_B_instr(B_instr),
-                       ID_opcode,
-                       ID_AM,
-                       ID_S_enable,
-                       ID_load_instr,
-                       ID_RF_enable,
-                       ID_Size_enable,
-                       ID_RW_enable,
-                       ID_Enable_signal,
-                       ID_BL_instr,
-                       ID_B_instr );
+                  .ID_opcode(ID_opcode),
+                  .ID_AM(ID_AM),
+                  .ID_S_enable(ID_S_enable),
+                  .ID_load_instr(ID_load_instr),
+                  .ID_RF_enable(ID_RF_enable),
+                  .ID_Size_enable(ID_Size_enable),
+                  .ID_RW_enable(ID_RW_enable),
+                  .ID_Enable_signal(ID_Enable_signal),
+                  .ID_BL_instr(ID_BL_instr),
+                  .ID_B_instr(ID_B_instr) );
 
-ID_EX idex(clk, R, .in_ID_opcode(ID_opcode),
+  ID_EX idex(.clk(clk), .R(R), .in_ID_opcode(ID_opcode),
                     .in_ID_AM(ID_AM),
                     .in_ID_S_enable(ID_S_enable),
                     .in_ID_load_instr(ID_load_instr),
@@ -134,63 +138,66 @@ ID_EX idex(clk, R, .in_ID_opcode(ID_opcode),
                     .in_ID_Size_enable(ID_Size_enable),
                     .in_ID_RW_enable(ID_RW_enable),
                     .in_ID_Enable_signal(ID_Enable_signal),
-                    .in_ID_BL_instr(ID_BL_instr),
-                    .in_ID_B_instr(ID_B_instr),
-                    EX_opcode,
-                    EX_AM,
-                    EX_S_enable,
-                    EX_load_instr,
-                    EX_RF_enable,
-                    EX_Size_enable,
-                    EX_RW_enable,
-                    EX_Enable_signal);
+           .EX_opcode(EX_opcode),
+           .EX_AM(EX_AM),
+           .EX_S_enable(EX_S_enable),
+           .EX_load_instr(EX_load_instr),
+           .EX_RF_enable(EX_RF_enable),
+           .EX_Size_enable(EX_Size_enable),
+           .EX_RW_enable(EX_RW_enable),
+           .EX_Enable_signal(EX_Enable_signal));
 
 
-EX_MEM exmem(clk, R, .in_EX_load_instr(EX_load_instr),
+  EX_MEM exmem(.clk(clk), .R(R), .in_EX_load_instr(EX_load_instr),
                      .in_EX_RF_enable(EX_RF_enable),
                      .in_EX_Size_enable(EX_Size_enable),
                      .in_EX_RW_enable(EX_RW_enable),
                      .in_EX_Enable_signal(EX_Enable_signal),
-                      MEM_load_instr,
-                      MEM_RF_enable,
-                      MEM_Size_enable,
-                      MEM_RW_enable,
-                      MEM_Enable_signal);
+             .MEM_load_instr(MEM_load_instr),
+             .MEM_RF_enable(MEM_RF_enable),
+             .MEM_Size_enable(MEM_Size_enable),
+             .MEM_RW_enable(MEM_RW_enable),
+             .MEM_Enable_signal(MEM_Enable_signal));
                       
-MEM_WB memwb(clk, R, .in_MEM_RF_enable(MEM_RF_enable), WB_RF_enable);
+  MEM_WB memwb(.clk(clk), .R(R), .in_MEM_RF_enable(in_MEM_RF_enable), .WB_RF_enable(WB_RF_enable));
                     
-
-initial begin
-    clk = 0;
-    R = 1;
-    LE = 1;
-    S = 0;
-    fi = $fopen("input_file.txt","r"); 
-    while (!$feof(fi)) 
-          begin 
-            code = $fscanf(fi, "%b", dataIN); 
-            rom.Mem[address] = dataIN;
-            address = address + 1;
-          end
-    $fclose(fi);
-
-        #3; //3
-        R = 0;
-
-        #29; //3 + 29 = 32
-        S = 1;
-        #8 $finish; //40
-
-end
-
-always begin
-       #2 clk = ~clk;
+integer read_counter = 0;
+// Continuous Clock Generation
+    initial begin
+        clk = 0;
+      repeat(20) #2 clk = ~clk; // Toggle the clock every 2 time units continuously
     end
 
+    // Control de Señales Iniciales
+    initial begin
+        R = 1; // Reset en 1 al inicio
+      in_pc = 0;  
+      LE = 1; // Enable de PC e IF/ID
+        S = 0; // Multiplexor en 0
+        #3 R = 0; // Reset cambia a 0 en tiempo 3
+        #32 S = 1; // Multiplexor cambia a 1 en tiempo 32
+    end
+
+    // Precarga de la Memoria de Instrucciones
+    initial begin
+        fi = $fopen("input_file.txt", "r");
+        if (fi == 0) begin
+            $display("Error: No se pudo abrir el archivo input_file.txt");
+            $finish;
+        end
+        // Leer cada instrucción y cargar en ROM
+        address = 8'b00000000;
+        while (!$feof(fi)) begin
+            code = $fscanf(fi, "%b", dataIN);
+            rom.Mem[address] = dataIN;
+            address = address + 1;
+        end
+        $fclose(fi);
+    end
 
 initial begin
-      $display("IF_ID")
-      $monitor("At time %t | ID_opcode = %b | ID_AM = %b | ID_S_enable = %b | ID_load_instr= %b | ID_RF_enable = %b | ID_Size_enable = %b | ID_RW_enable = %b | ID_Enable_signal = %b | ID_BL_instr = %b | ID_B_instr = %b" , $time, ID_opcode, ID_AM,
+  $display("IF_ID");
+  $monitor("\nAt time %t | PC: %d | clk: %d | instruction: %b | ID_opcode = %b | ID_AM = %b | ID_S_enable = %b | ID_load_instr= %b | ID_RF_enable = %b | ID_Size_enable = %b | ID_RW_enable = %b | ID_Enable_signal = %b | ID_BL_instr = %b | ID_B_instr = %b", $time, out_pc, clk, in_instruction, ID_opcode, ID_AM,
                ID_S_enable,
                ID_load_instr,
                ID_RF_enable,
