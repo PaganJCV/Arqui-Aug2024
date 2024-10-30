@@ -75,7 +75,7 @@ module Control_Unit(
 
 always @(*) begin
   opcode = 4'b1110;
-    AM = 1'b0;
+    AM = 2'b00;
     S_enable = 1'b0;
     load_instr = 1'b0;
     RF_enable = 1'b0;
@@ -302,23 +302,26 @@ always @(*) begin
 end
   
   always @(*) begin
-    case ({in_instruction[27:24],in_instruction[21]})
-        //Immediate offset
-        5'b01010: AM = 00;
-        //Scaled register/Register offset
-        5'b01110: AM = 01;
-        //Immediate pre-indexed
-        5'b01011: AM = 00;
-        //Scaled register/Register pre-indexed
-        5'b01111: AM = 11;
-        //Immediate post-indexed
-        5'b01000: AM = 00;
-        //Scaled register/Register post-indexed
-        5'b01100: AM = 11;
-        //Immediate post-indexed 
-        5'b01001: AM = 00;
-        //Scaled register/Register post-indexed
-        5'b01101: AM = 11;
+    case ({in_instruction[27:25],in_instruction[4]})
+        //data processing Immediate shift
+        4'b0000: AM = 2'b11;
+
+        //data processing register shift
+        4'b0001: AM = 2'b11;
+
+        //rotate 
+        4'b0010: AM = 2'b00;
+
+        4'b0011: AM = 2'b00;
+
+        //register shift
+        4'b0110: AM = 2'b11;
+      
+
+        //immediateoffset
+        4'b0100: AM = 2'b10;
+        4'b0101: AM = 2'b10;
+
     endcase
 end
 
@@ -352,7 +355,7 @@ module CU_mux(
 always @(*) begin
     if(S) begin
         ID_opcode = 4'b0000;
-        ID_AM = 1'b0;
+        ID_AM = 2'b11;
         ID_S_enable = 1'b0;
         ID_load_instr = 1'b0;
         ID_RF_enable = 1'b0;
@@ -410,7 +413,7 @@ module ID_EX(
 always @(posedge clk) begin
       if(R) begin
             EX_opcode <= 4'b0000;
-            EX_AM <= 1'b0;
+            EX_AM <= 2'b00;
             EX_S_enable <= 1'b0;
             EX_load_instr <= 1'b0;
             EX_RF_enable <= 1'b0;
