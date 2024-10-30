@@ -61,8 +61,8 @@ endmodule
 module Control_Unit(
   input [31:0] in_instruction,
   output reg[3:0] opcode,
-    output reg AM,
-               S_enable,
+  output reg [1:0] AM,
+    output reg S_enable,
                load_instr,
                RF_enable,
                Size_enable,
@@ -177,9 +177,9 @@ else if((in_instruction[27:25] == 3'b010)
             //load word
             else if(in_instruction[20] && !in_instruction[22]) begin load_instr = 1'b1; Size_enable = 1'b1; RW_enable = 1'b0; Enable_signal = 1'b1; RF_enable = 1'b1; keyword = "LDR"; end
             //store byte
-            else if(!in_instruction[20] && in_instruction[22]) begin load_instr = 1'b0; Size_enable = 1'b0; RW_enable = 1'b1; Enable_signal = 1'b1; RF_enable = 1'b1; keyword = "STRB"; end
+            else if(!in_instruction[20] && in_instruction[22]) begin load_instr = 1'b0; Size_enable = 1'b0; RW_enable = 1'b1; Enable_signal = 1'b1; RF_enable = 1'b0; keyword = "STRB"; end
             //store word
-            else if(!in_instruction[20] && !in_instruction[22]) begin load_instr = 1'b0; Size_enable = 1'b1; RW_enable = 1'b1; Enable_signal = 1'b1; RF_enable = 1'b1; keyword = "STR"; end
+            else if(!in_instruction[20] && !in_instruction[22]) begin load_instr = 1'b0; Size_enable = 1'b1; RW_enable = 1'b1; Enable_signal = 1'b1; RF_enable = 1'b0; keyword = "STR"; end
         end
 //branch/branch and link
   else if(in_instruction[27:25] == 3'b101) begin
@@ -300,6 +300,27 @@ always @(*) begin
   if(keyword[7:0] == 8'b01010011) S_enable = 1;
   else S_enable =0;
 end
+  
+  always @(*) begin
+    case ({in_instruction[27:24],in_instruction[21]})
+        //Immediate offset
+        5'b01010: AM = 00;
+        //Scaled register/Register offset
+        5'b01110: AM = 01;
+        //Immediate pre-indexed
+        5'b01011: AM = 00;
+        //Scaled register/Register pre-indexed
+        5'b01111: AM = 11;
+        //Immediate post-indexed
+        5'b01000: AM = 00;
+        //Scaled register/Register post-indexed
+        5'b01100: AM = 11;
+        //Immediate post-indexed 
+        5'b01001: AM = 00;
+        //Scaled register/Register post-indexed
+        5'b01101: AM = 11;
+    endcase
+end
 
 endmodule
 
@@ -307,8 +328,8 @@ endmodule
 module CU_mux(
     input S,
     input [3:0] mux_opcode,
-    input mux_AM,
-          mux_S_enable,
+  input [1:0] mux_AM,
+    input mux_S_enable,
           mux_load_instr,
           mux_RF_enable,
           mux_Size_enable,
@@ -317,8 +338,8 @@ module CU_mux(
           mux_BL_instr,
           mux_B_instr,
     output reg [3:0] ID_opcode,
-    output reg ID_AM,
-               ID_S_enable,
+  output reg [1:0] ID_AM,
+    output reg ID_S_enable,
                ID_load_instr,
                ID_RF_enable,
                ID_Size_enable,
@@ -365,8 +386,8 @@ module ID_EX(
 //     input [3:0] Rd_or_14;
 //     input [11:0] I_11_0;
   input [3:0] in_ID_opcode,
-    input in_ID_AM,
-          in_ID_S_enable,
+  input [1:0]in_ID_AM,
+    input in_ID_S_enable,
           in_ID_load_instr,
           in_ID_RF_enable,
           in_ID_Size_enable,
@@ -377,8 +398,8 @@ module ID_EX(
 //     output reg [11:0] EX_I_11_0;
 //     output reg [3:0] EX_Rd_or_14;
   output reg [3:0] EX_opcode,
-    output reg EX_AM,
-          EX_S_enable,
+  output reg [1:0] EX_AM,
+    output reg EX_S_enable,
           EX_load_instr,
           EX_RF_enable,
           EX_Size_enable,
