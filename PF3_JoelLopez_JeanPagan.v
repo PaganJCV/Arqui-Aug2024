@@ -31,6 +31,7 @@ module CU_tb;
          Enable_signal,
          BL_instr,
          B_instr;
+  wire [47:0] keyword;
 
     //CU mux
     reg S;
@@ -108,7 +109,8 @@ module CU_tb;
                RW_enable,
                Enable_signal,
                BL_instr,
-               B_instr);
+               B_instr,
+               keyword);
 
   CU_mux  cu_mux_tb(.S(S), .mux_opcode(opcode),  
                       .mux_AM(AM), 
@@ -162,11 +164,9 @@ module CU_tb;
                       
   MEM_WB memwb(.clk(clk), .R(R), .in_MEM_RF_enable(MEM_RF_enable), .WB_RF_enable(WB_RF_enable));
                     
-integer read_counter = 0;
-// Continuous Clock Generation
     initial begin
         clk = 0;
-      repeat(22) #2 clk = ~clk; // Toggle the clock every 2 time units continuously
+      repeat(20) #2 clk = ~clk; 
     end
 
     // Control de Señales Iniciales
@@ -198,8 +198,9 @@ integer read_counter = 0;
 
 initial begin
   $display("Control Signals:");
-  $monitor("\nID: \nPC = %d | ID_opcode = %b | ID_AM = %b | ID_S_enable = %b | ID_load_instr= %b | ID_RF_enable = %b | ID_Size_enable = %b | ID_RW_enable = %b | ID_Enable_signal = %b | ID_BL_instr = %b | ID_B_instr = %b \n\nEX:\nEX_opcode = %b | EX_AM = %b | EX_S_enable = %b | EX_RF_enable = %b | EX_Size_enable = %b | EX_RW_enable = %b | EX_Enable_signal = %b \n\nMEM:\nMEM_RF_enable = %b | MEM_Size_enable = %b | MEM_RW_enable = %b | MEM_Enable_signal = %b\n\nWB:\nWB_RF_enable: %b\n\n--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------",
+  $monitor("\ntime: %d\n\nInstruction: %b\n\nID: \nPC = %d | Instr = %s | ID_opcode: %b |  ID_AM = %b | ID_S_enable = %b | ID_load_instr= %b | ID_RF_enable = %b | ID_Size_enable = %b | ID_RW_enable = %b | ID_Enable_signal = %b | ID_BL_instr = %b | ID_B_instr = %b \n\nEX:\nEX_opcode = %b | EX_AM = %b | EX_S_enable = %b | EX_RF_enable = %b | EX_Size_enable = %b | EX_RW_enable = %b | EX_Enable_signal = %b \n\nMEM:\nMEM_RF_enable = %b | MEM_Size_enable = %b | MEM_RW_enable = %b | MEM_Enable_signal = %b\n\nWB:\nWB_RF_enable: %b\n\n--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------",$time, in_instruction,
              out_pc,
+             keyword,
              ID_opcode,
              ID_AM,
              ID_S_enable,
@@ -221,7 +222,7 @@ initial begin
              MEM_Size_enable,
              MEM_RW_enable,
              MEM_Enable_signal,
-          	 WB_RF_enable);
+          	 WB_RF_enable, clk);
 
 end
 
