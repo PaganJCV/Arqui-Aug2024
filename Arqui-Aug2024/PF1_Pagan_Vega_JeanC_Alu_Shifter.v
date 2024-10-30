@@ -78,7 +78,7 @@ always @(*) begin
             result = OperandB - OperandA;
             Z = (result == 0);
             N = (result[31] == 1);
-         	  C = (OperandB < OperandA);
+         	C = (OperandB < OperandA);
             V = ((OperandB[31] ^ OperandA[31]) & (OperandB[31] ^ result[31]));
         end
         4'b0101: begin
