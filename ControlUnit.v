@@ -223,4 +223,27 @@ always @(*) begin
     endcase 
 end
 
+
+always @(*) begin
+    case ({in_instruction[27:24],in_instruction[21]})
+        //Immediate offset
+        5'b01010: AM = 00;
+        //Scaled register/Register offset
+        5'b01110: AM = 01;
+        //Immediate pre-indexed
+        5'b01011: AM = 00;
+        //Scaled register/Register pre-indexed
+        5'b01111: AM = 11;
+        //Immediate post-indexed
+        5'b01000: AM = 00;
+        //Scaled register/Register post-indexed
+        5'b01100: AM = 11;
+        //Immediate post-indexed 
+        5'b01001: AM = 00;
+        //Scaled register/Register post-indexed
+        5'b01101: AM = 11;
+    endcase
+end
+
+
 endmodule
