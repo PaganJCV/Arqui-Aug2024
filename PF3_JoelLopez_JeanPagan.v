@@ -22,8 +22,8 @@ module CU_tb;
     //Control Unit
     reg [31:0] in_instruction;
     wire [3:0] opcode;
-    wire AM,
-         S_enable,
+  wire [1:0] AM;
+    wire S_enable,
          load_instr,
          RF_enable,
          Size_enable,
@@ -36,8 +36,8 @@ module CU_tb;
     //CU mux
     reg S;
     reg [3:0] mux_opcode;
-    reg mux_AM,
-        mux_S_enable,
+  reg [1:0] mux_AM;
+    reg mux_S_enable,
         mux_load_instr,
         mux_RF_enable,
         mux_Size_enable,
@@ -46,8 +46,8 @@ module CU_tb;
         mux_BL_instr,
         mux_B_instr;
     wire [3:0] ID_opcode;
-    wire ID_AM,
-         ID_S_enable,
+  wire [1:0] ID_AM;
+    wire ID_S_enable,
          ID_load_instr,
          ID_RF_enable,
          ID_Size_enable,
@@ -58,16 +58,16 @@ module CU_tb;
 
     //ID_EX
     reg [3:0] in_ID_opcode;
-    reg   in_ID_AM,
-          in_ID_S_enable,
+  reg [1:0] in_ID_AM;
+    reg   in_ID_S_enable,
           in_ID_load_instr,
           in_ID_RF_enable,
           in_ID_Size_enable,
           in_ID_RW_enable,
           in_ID_Enable_signal;
     wire [3:0] EX_opcode;
-    wire  EX_AM,
-          EX_S_enable,
+  wire [1:0] EX_AM;
+    wire   EX_S_enable,
           EX_load_instr,
           EX_RF_enable,
           EX_Size_enable,
