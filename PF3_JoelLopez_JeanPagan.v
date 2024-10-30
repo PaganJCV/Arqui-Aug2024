@@ -17,7 +17,7 @@ module CU_tb;
 
     //IF_ID 
     reg [31:0] rom_instruction;
-  wire [31:0] Instruction;
+  wire [31:0] instruction;
 
     //Control Unit
     reg [31:0] in_instruction;
@@ -88,7 +88,7 @@ module CU_tb;
     //MEM_WB
     reg in_MEM_RF_enable;
     wire WB_RF_enable;
-
+ 
   PC pc_tb(.clk(clk), .R(R), .LE(LE), .in_pc(result), .out_pc(out_pc));
 
   PC_adder adder_tb(.num(out_pc), .result(result));
@@ -160,13 +160,13 @@ module CU_tb;
              .MEM_RW_enable(MEM_RW_enable),
              .MEM_Enable_signal(MEM_Enable_signal));
                       
-  MEM_WB memwb(.clk(clk), .R(R), .in_MEM_RF_enable(in_MEM_RF_enable), .WB_RF_enable(WB_RF_enable));
+  MEM_WB memwb(.clk(clk), .R(R), .in_MEM_RF_enable(MEM_RF_enable), .WB_RF_enable(WB_RF_enable));
                     
 integer read_counter = 0;
 // Continuous Clock Generation
     initial begin
         clk = 0;
-      repeat(20) #2 clk = ~clk; // Toggle the clock every 2 time units continuously
+      repeat(22) #2 clk = ~clk; // Toggle the clock every 2 time units continuously
     end
 
     // Control de Señales Iniciales
@@ -197,42 +197,32 @@ integer read_counter = 0;
     end
 
 initial begin
-  $display("IF_ID");
-  $monitor("\nAt time %t | ID_opcode = %b | ID_AM = %b | ID_S_enable = %b | ID_load_instr= %b | ID_RF_enable = %b | ID_Size_enable = %b | ID_RW_enable = %b | ID_Enable_signal = %b | ID_BL_instr = %b | ID_B_instr = %b",
-               $time,
-               ID_opcode,
-               ID_AM,
-               ID_S_enable,
-               ID_load_instr,
-               ID_RF_enable,
-               ID_Size_enable,
-               ID_RW_enable,
-               ID_Enable_signal,
-               ID_BL_instr,
-               ID_B_instr);
-  $display(ID_EX);
-  $monitor("\nAt time %t | EX_opcode = %b | EX_AM = %b | EX_S_enable = %b | EX_RF_enable = %b | EX_Size_enable = %b | EX_RW_enable = %b | EX_Enable_signal = %b", 
-                  $time,
-                  EX_opcode,
-                  EX_AM,
-                  EX_S_enable,
-                  EX_RF_enable,
-                  EX_Size_enable,
-                  EX_RW_enable,
-                  EX_Enable_signal);
-  $display(EX_MEM);
+  $display("Control Signals:");
+  $monitor("\nID: \nPC = %d | ID_opcode = %b | ID_AM = %b | ID_S_enable = %b | ID_load_instr= %b | ID_RF_enable = %b | ID_Size_enable = %b | ID_RW_enable = %b | ID_Enable_signal = %b | ID_BL_instr = %b | ID_B_instr = %b \n\nEX:\nEX_opcode = %b | EX_AM = %b | EX_S_enable = %b | EX_RF_enable = %b | EX_Size_enable = %b | EX_RW_enable = %b | EX_Enable_signal = %b \n\nMEM:\nMEM_RF_enable = %b | MEM_Size_enable = %b | MEM_RW_enable = %b | MEM_Enable_signal = %b\n\nWB:\nWB_RF_enable: %b\n\n--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------",
+             out_pc,
+             ID_opcode,
+             ID_AM,
+             ID_S_enable,
+             ID_load_instr,
+             ID_RF_enable,
+             ID_Size_enable,
+             ID_RW_enable,
+             ID_Enable_signal,
+             ID_BL_instr,
+             ID_B_instr,
+          	 EX_opcode,
+             EX_AM,
+             EX_S_enable,
+             EX_RF_enable,
+             EX_Size_enable,
+             EX_RW_enable,
+             EX_Enable_signal,
+          	 MEM_RF_enable,
+             MEM_Size_enable,
+             MEM_RW_enable,
+             MEM_Enable_signal,
+          	 WB_RF_enable);
 
-  $display(MEM_WB);
-
-  $monitor("\nAt time %t | PC: %d | clk: %d | instruction: %b | ID_opcode = %b | ID_AM = %b | ID_S_enable = %b | ID_load_instr= %b | ID_RF_enable = %b | ID_Size_enable = %b | ID_RW_enable = %b | ID_Enable_signal = %b | ID_BL_instr = %b | ID_B_instr = %b", $time, out_pc, clk, in_instruction, opcode, AM,
-               S_enable,
-               load_instr,
-               RF_enable,
-               Size_enable,
-               RW_enable,
-               Enable_signal,
-               BL_instr,
-               B_instr);
 end
 
 
