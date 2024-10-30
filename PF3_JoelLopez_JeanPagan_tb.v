@@ -87,57 +87,41 @@ always @(*) begin
   case(in_instruction[24:21])
         4'b0000: begin
             opcode = 4'b0110; //And	
-            RF_enable = 1'b1;
         end
         4'b0001: begin
             opcode = 4'b1000; //XOR
-            RF_enable = 1'b1;
         end
         4'b0010: begin
             opcode = 4'b0010; //A-B
-            RF_enable = 1'b1;
         end
          4'b0011: begin
             opcode = 4'b0100; //B-A
-            RF_enable = 1'b1;
         end
         4'b0100: begin
             opcode = 4'b0000; //A+B
-            RF_enable = 1'b1;
         end
         4'b0101: begin
             opcode = 4'b0001; //A+B+Cin
-            RF_enable = 1'b1;
         end
          4'b0110: begin
             opcode = 4'b0011; //A-B-Cin
-            RF_enable = 1'b1;
         end
         4'b0111: begin
             opcode = 4'b0101; //B-A-Cin
-            RF_enable = 1'b1;
         end
         4'b1100: begin
             opcode = 4'b0111; //OR
-            RF_enable = 1'b1;
         end
         4'b1101: begin
             opcode = 4'b1010; //B
-            RF_enable = 1'b1;
         end
         4'b1110: begin
             opcode = 4'b1100; //A and (notB)
-            RF_enable = 1'b1;
         end
         4'b1111: begin
             opcode = 4'b1011; //not B
-            RF_enable = 1'b1;
-
         end
-    default: begin
-    opcode = 4'b1001; 
-    RF_enable = 1'b1;//A
-    end
+    default: opcode = 4'b1001; //A
 endcase
 //Data processing in_instruction and bit 20 = 0, S_enable
 if((in_instruction[27:25] == 3'b000) && (in_instruction[7] == 1'b0) && (in_instruction[4] == 1'b1) && (in_instruction[20] == 1'b0)) S_enable = 1'b0;
@@ -148,13 +132,13 @@ else if((in_instruction[27:25] == 3'b010)
         || (in_instruction[27:25] == 3'b100) 
         || ((in_instruction[27:25] == 3'b000) && (in_instruction[7] == 1'b1) && (in_instruction[4] == 1'b1))) begin
             //load word
-            if(in_instruction[20] && in_instruction[22]) begin load_instr = 1'b1; Size_enable = 1'b0; RW_enable = 1'b0; Enable_signal = 1'b1; RF_enable = 1'b1; end
+  if(in_instruction[20] && in_instruction[22]) begin load_instr = 1'b1; Size_enable = 1'b1; RW_enable = 1'b0; Enable_signal = 1'b1; RF_enable = 1'b1; end
             //load byte
-            else if(in_instruction[20] && !in_instruction[22]) begin load_instr = 1'b1; Size_enable = 1'b1; RW_enable = 1'b0; Enable_signal = 1'b1; RF_enable = 1'b1; end
+            else if(in_instruction[20] && !in_instruction[22]) begin load_instr = 1'b1; Size_enable = 1'b0; RW_enable = 1'b0; Enable_signal = 1'b1; RF_enable = 1'b1; end
             //store word
-            else if(!in_instruction[20] && in_instruction[22]) begin load_instr = 1'b0; Size_enable = 1'b0; RW_enable = 1'b0; Enable_signal = 1'b1; RF_enable = 1'b1; end
+            else if(!in_instruction[20] && in_instruction[22]) begin load_instr = 1'b0; Size_enable = 1'b1; RW_enable = 1'b1; Enable_signal = 1'b1; RF_enable = 1'b1; end
             //store byte
-            else if(!in_instruction[20] && !in_instruction[22]) begin load_instr = 1'b0; Size_enable = 1'b1; RW_enable = 1'b0; Enable_signal = 1'b1; RF_enable = 1'b1; end
+            else if(!in_instruction[20] && !in_instruction[22]) begin load_instr = 1'b0; Size_enable = 1'b0; RW_enable = 1'b1; Enable_signal = 1'b1; RF_enable = 1'b1; end
         end
 //branch/branch and link
   else if(in_instruction[27:25] == 3'b101) begin
@@ -204,16 +188,16 @@ always @(*) begin
     end
 
     else begin
-        ID_opcode <= mux_opcode;
-        ID_AM <= mux_AM;
-        ID_S_enable <= mux_S_enable;
-        ID_load_instr <= mux_load_instr;
-        ID_RF_enable <= mux_RF_enable;
-        ID_Size_enable <= mux_Size_enable;
-        ID_RW_enable <= mux_RW_enable;
-        ID_Enable_signal <= mux_Enable_signal;
-        ID_BL_instr <= mux_BL_instr;
-        ID_B_instr <= mux_B_instr;
+        ID_opcode = mux_opcode;
+        ID_AM = mux_AM;
+        ID_S_enable = mux_S_enable;
+        ID_load_instr = mux_load_instr;
+        ID_RF_enable = mux_RF_enable;
+        ID_Size_enable = mux_Size_enable;
+        ID_RW_enable = mux_RW_enable;
+        ID_Enable_signal = mux_Enable_signal;
+        ID_BL_instr = mux_BL_instr;
+        ID_B_instr = mux_B_instr;
     end
 end
 
