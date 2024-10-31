@@ -304,8 +304,10 @@ end
   always @(*) begin
     case ({in_instruction[27:25],in_instruction[4]})
         //data processing Immediate shift
-        4'b0000: AM = 2'b11;
-
+        4'b0000: begin
+          if(keyword == "NOP") AM = 2'b00;
+          else AM = 2'b11;
+        end
         //data processing register shift
         4'b0001: AM = 2'b11;
 
@@ -321,7 +323,7 @@ end
         //immediateoffset
         4'b0100: AM = 2'b10;
         4'b0101: AM = 2'b10;
-
+	
     endcase
 end
 
@@ -355,7 +357,7 @@ module CU_mux(
 always @(*) begin
     if(S) begin
         ID_opcode = 4'b0000;
-        ID_AM = 2'b11;
+        ID_AM = 2'b00;
         ID_S_enable = 1'b0;
         ID_load_instr = 1'b0;
         ID_RF_enable = 1'b0;
