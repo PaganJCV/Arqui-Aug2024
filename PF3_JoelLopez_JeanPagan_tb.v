@@ -75,7 +75,7 @@ module Control_Unit(
 
 always @(*) begin
   opcode = 4'b1110;
-    AM = 2'b00;
+    AM = 1'b0;
     S_enable = 1'b0;
     load_instr = 1'b0;
     RF_enable = 1'b0;
@@ -354,8 +354,8 @@ module CU_mux(
                ID_B_instr
 );
 
-always @(*) begin
-    if(S) begin
+  always @(*) begin
+  if(S == 1'b1) begin
         ID_opcode = 4'b0000;
         ID_AM = 2'b00;
         ID_S_enable = 1'b0;
