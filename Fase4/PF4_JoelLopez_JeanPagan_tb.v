@@ -5,25 +5,25 @@ module PPU;
     wire out_RF_mux;
 
     //MUX RD_reg
-    reg fourteen_decimal;
-    wire out_RD_mux; 
+    reg [3:0] fourteen_decimal;
+    wire [31:0] out_RD_mux; 
 
     //MUX ALU out
-    wire out_ALU_mux; 
+    wire [31:0] out_ALU_mux; 
 
     //MUX Flags
-    reg alu_flags_conc;
-    wire out_flags_mux;
+    reg [3:0] alu_flags_conc;
+    wire [3:0] out_flags_mux;
 
     //MUX 2x1 32 bits (MEM)
-    wire out_RAM_mux;
+    wire [31:0] out_RAM_mux;
 
     //MUX IF
-    wire out_result_PC;
+    wire [7:0] out_result_PC;
 
     //MUX RN, RM
-    wire out_RN;
-    wire out_RM;
+    wire [31:0] out_RN;
+    wire [31:0] out_RM;
 
 
     reg clk, R, LE;
@@ -185,7 +185,7 @@ module PPU;
 
   PC_adder adder_tb(.num(out_pc), .result(result));
   
-  mux_2x1 IF_mux(.Y(out_result_PC), .S(Branch), .A(Target_add), .B(result));
+  mux_8x1 IF_mux(.Y_8(out_result_PC), .S_8(Branch), .A_8(Target_add), .B_8(result));
 
   ROM rom(.address(out_pc),.instruction(Instruction));
 //
@@ -210,7 +210,7 @@ Register_file RF (
     .RB(I_3_0_Rm),
     .RD(I_15_12_Rd),
     .RW(WB_Rd_or_14),
-    .PC(out_pc),
+  .PC({24'b0, out_pc}),
     .PW(PW),
     .PA(PA),
     .PB(PB),
@@ -305,11 +305,11 @@ alu ALU (
         .V(V)
     );
 
-mux_4x1 alu_out_mux(
-    .Y_4(out_ALU_mux),
-    .A_4(EX_next_pc),
-    .B_4(result_ALU),
-    .S_4(EX_BL_enable)
+mux_32x1 alu_out_mux(
+    .Y_32(out_ALU_mux),
+    .A_32(EX_next_pc),
+    .B_32(result_ALU),
+    .S_32(EX_BL_enable)
 );
 
 Shifter shift (
@@ -425,39 +425,36 @@ mux_32x1 mem_mux(
         forever #2 clk = ~clk;  // Clock generation (period of 4 units)
     end
 
-    // Precarga de la Memoria de Instrucciones
     initial begin
-        fi = $fopen("input_file.txt", "r");
-        if (fi == 0) begin
-            $display("Error: No se pudo abrir el archivo input_file.txt");
-            $finish;
-        end
-        // Leer cada instrucción y cargar en ROM
-        address = 8'b00000000;
-        while (!$feof(fi)) begin
-            code = $fscanf(fi, "%b", dataIN);
-            rom.Mem[address] = dataIN;
-            address = address + 1;
-        end
-        $fclose(fi);
-    end
-
-    // Precarga de la Memoria RAM
-initial begin
-    fi = $fopen("input_file.txt", "r");
+    // ROM Preload
+    fi = $fopen("rom_input_file.txt", "r");
     if (fi == 0) begin
-        $display("Error: No se pudo abrir el archivo ram_input_file.txt");
+        $display("Error: Could not open rom_input_file.txt");
         $finish;
     end
-    // Leer cada dato y cargar en RAM
-    Addd = 8'b00000000;  // Comenzar desde la dirección 0
+    address = 8'd0;
     while (!$feof(fi)) begin
         code = $fscanf(fi, "%b", dataIN);
-        RAM.Mem[Addd] = dataIN[7:0];  // Almacenar los datos en la memoria RAM
+        rom.Mem[address] = dataIN[7:0]; // Load each byte
+        address = address + 1;
+    end
+    $fclose(fi);
+
+    // RAM Preload
+    fi = $fopen("ram_input_file.txt", "r");
+    if (fi == 0) begin
+        $display("Error: Could not open ram_input_file.txt");
+        $finish;
+    end
+    Addd = 8'd0;
+    while (!$feof(fi)) begin
+        code = $fscanf(fi, "%b", dataIN);
+        RAM.Mem[Addd] = dataIN[7:0]; // Load each byte
         Addd = Addd + 1;
     end
     $fclose(fi);
 end
+
 
 initial begin
         // Step 1: Read word from RAM address 52, store in N

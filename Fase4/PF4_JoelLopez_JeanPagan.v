@@ -2,6 +2,11 @@ module mux_2x1 (output Y, input S, A, B);
 assign Y = (S)? A:B;
 endmodule
 
+module mux_8x1(output [7:0] Y_8, input S_8, input [7:0] A_8, B_8);
+assign Y_8 = (S_8) ? B_8 : A_8;
+endmodule
+
+
 //MEM MUX
 module mux_32x1 (output [31:0] Y_32, input [31:0] A_32, B_32, input S_32);
 assign Y_32 = (S_32)? A_32:B_32;
@@ -77,7 +82,7 @@ module TA (
     input [7:0] in_next_pc,
     output reg [7:0] Target_add
 );
-
+reg [7:0] extended;
 always @(*) begin
     assign extended = $signed(in_I_23_0) << 2;
     Target_add = in_next_pc + extended[7:0];
@@ -546,7 +551,7 @@ module ID_EX(
           in_ID_RW_enable,
           in_ID_Enable_signal,
           in_BL_enable,
-    output reg EX_next_pc;
+    output reg EX_next_pc,
     output reg [31:0] EX_Pa, EX_Pb, EX_Pd,
     output reg [11:0] EX_I_11_0,
     output reg [3:0] EX_Rd_or_14,
@@ -921,7 +926,7 @@ module ForwardingUnit (
     ID_RM, ID_RN,
     input EX_RF_enable, MEM_RF_enable, WB_RF_enable,
     EX_load_instr, MEM_load_instr,
-    output reg FW_LE_SIGNAL, FW_CU_MUX_SIGNAL, FW_MEM_MUX_SIGNAL
+    output reg FW_LE_SIGNAL, FW_CU_MUX_SIGNAL, FW_MEM_MUX_SIGNAL,
     output reg [1:0] FW_ID_RM_MUX_SIGNAL, FW_ID_RN_MUX_SIGNAL,
     output reg [3:0] EX_TO_ID_RD, MEM_TO_ID_RD, WB_TO_ID_RD       
 );
