@@ -22,6 +22,7 @@ module PPU;
     wire [7:0] out_result_PC;
 
     //MUX RN, RM
+  reg [31:0] in_Px;
     wire [31:0] out_RN;
     wire [31:0] out_RM;
 
@@ -218,10 +219,25 @@ Register_file RF (
   );
 
   //RN
-  RF_big_mux PA_mux(.in_Px(PA), .EX_TO_ID_RD(out_ALU_mux), .MEM_TO_ID_RD(out_RAM_mux), .WB_TO_ID_RD(out_WB_DO), .FW_ID_RX_MUX_SIGNAL(FW_ID_RN_MUX_SIGNAL), .Px(out_RN));
+  RF_big_mux PA_mux(
+    .in_PX(PA), 
+    .EX_TO_ID_RD(out_ALU_mux), 
+    .MEM_TO_ID_RD(out_RAM_mux), 
+    .WB_TO_ID_RD(out_WB_DO), 
+    .FW_ID_RX_MUX_SIGNAL(FW_ID_RN_MUX_SIGNAL), 
+    .Px(out_RN)
+);
 
   //RM
-  RF_big_mux PB_mux(.in_Px(PB), .EX_TO_ID_RD(out_ALU_mux), .MEM_TO_ID_RD(out_RAM_mux), .WB_TO_ID_RD(out_WB_DO), .FW_ID_RX_MUX_SIGNAL(FW_ID_RN_MUX_SIGNAL), .Px(out_RM));
+  RF_big_mux PB_mux(
+    .in_PX(PB), 
+    .EX_TO_ID_RD(out_ALU_mux), 
+    .MEM_TO_ID_RD(out_RAM_mux), 
+    .WB_TO_ID_RD(out_WB_DO), 
+    .FW_ID_RX_MUX_SIGNAL(FW_ID_RN_MUX_SIGNAL), 
+    .Px(out_RM)
+);
+
  
 
  //TA
