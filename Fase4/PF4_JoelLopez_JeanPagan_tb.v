@@ -6,7 +6,7 @@ module PPU;
 
     //MUX RD_reg
     reg [3:0] fourteen_decimal;
-    wire [31:0] out_RD_mux; 
+    wire [3:0] out_RD_mux; 
 
     //MUX ALU out
     wire [31:0] out_ALU_mux; 
