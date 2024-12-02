@@ -1,5 +1,15 @@
-module mux_2x1 (output Y, input S, A , B);
+module mux_2x1 (output Y, input S, A, B);
 assign Y = (S)? A:B;
+endmodule
+
+//MEM MUX
+module mux_32x1 (output [31:0] Y_32, input [31:0] A_32, B_32, input S_32);
+assign Y_32 = (S_32)? A_32:B_32;
+endmodule
+
+//(1) ID, (2) EX MUX
+module mux_4x1(output [3:0] Y_4, input [3:0] A_4, B_4, input S_4);
+assign Y_4 = (S_4)? A_4:B_4;
 endmodule
 
 module PC(
@@ -171,6 +181,26 @@ always @ (i_mux , Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, Z12, Z13, Z1
 endmodule
 
 /////////REGISTER FILE/////////
+
+//////////RF MUX////////////
+module RF_big_mux(
+    input [31:0] in_PX, EX_TO_ID_RD, MEM_TO_ID_RD, WB_TO_ID_RD,
+    input [1:0] FW_ID_RX_MUX_SIGNAL,
+    output reg [31:0] Px    
+); 
+
+always @(*) begin
+    case(FW_ID_RX_MUX_SIGNAL)
+        2'd00: Px = in_PX;
+        2'b01: Px = EX_TO_ID_RD;
+        2'b10: Px = MEM_TO_ID_RD;
+        2'b11: Px = WB_TO_ID_RD;
+        default: Px = in_PX;
+    endcase
+end
+
+endmodule
+////////////RF MUX///////////////
 
 module Control_Unit(
   input [31:0] in_instruction,
@@ -503,7 +533,7 @@ endmodule
 
 module ID_EX(
     input clk, R,
-    input [7:8] in_next_pc,
+    input [7:0] in_next_pc,
     input [31:0] Pa, Pb, Pd,
     input [3:0] in_Rd_or_14,
     input [11:0] in_I_11_0,
@@ -515,6 +545,7 @@ module ID_EX(
           in_ID_Size_enable,
           in_ID_RW_enable,
           in_ID_Enable_signal,
+          in_BL_enable,
     output reg EX_next_pc;
     output reg [31:0] EX_Pa, EX_Pb, EX_Pd,
     output reg [11:0] EX_I_11_0,
@@ -526,11 +557,18 @@ module ID_EX(
           EX_RF_enable,
           EX_Size_enable,
           EX_RW_enable,
-          EX_Enable_signal
+          EX_Enable_signal,
+          EX_BL_enable
 );
 
 always @(posedge clk) begin
       if(R) begin
+            EX_next_pc <= 8'b0;
+            EX_Pa <= 32'b0;
+            EX_Pb <= 32'b0;
+            EX_Pd <= 32'b0;
+            EX_Rd_or_14 <= 4'b0;
+            EX_I_11_0 <= 12'b0;
             EX_opcode <= 4'b0000;
             EX_AM <= 2'b00;
             EX_S_enable <= 1'b0;
@@ -539,8 +577,15 @@ always @(posedge clk) begin
             EX_Size_enable <= 1'b0;
             EX_RW_enable <= 1'b0;
             EX_Enable_signal <= 1'b0;
+            EX_BL_enable <= 1'b0;
       end
       else begin
+            EX_next_pc <= in_next_pc;
+            EX_Pa <= Pa;
+            EX_Pb <= Pb;
+            EX_Pd <= Pd;
+            EX_Rd_or_14 <= Rd_or_14;
+            EX_I_11_0 <= I_11_0;
             EX_opcode <= in_ID_opcode;
             EX_AM <= in_ID_AM;
             EX_S_enable <= in_ID_S_enable;
@@ -549,6 +594,7 @@ always @(posedge clk) begin
             EX_Size_enable <= in_ID_Size_enable;
             EX_RW_enable <= in_ID_RW_enable;
             EX_Enable_signal <= in_ID_Enable_signal;
+            EX_BL_enable <= in_BL_enable;
       end 
 end
 
@@ -705,6 +751,70 @@ end
 
 endmodule
 
+module PSR(
+    input clk, SE,
+    input Z_in, N_in, C_in, V_in,
+    output reg [3:0] PSR_flags // Combined register for flags [N, Z, C, V]
+);
+
+always @(posedge clk) begin
+    if (SE) PSR_flags <= {N_in, Z_in, C_in, V_in};
+    else PSR_flags <= 4'b0000;
+end
+
+endmodule
+
+module ConditionHandler (
+    input [3:0] cond_code,      // Bits 28-31
+    input [3:0] flags,          // Flags from PSR: [N, Z, C, V]
+    input in_B_instr, in_BL_instr,      
+    output reg Branch, BranchL 
+);
+
+    // Decode PSR flags
+    // wire N = flags[3];  // Negative
+    // wire Z = flags[2];  // Zero
+    // wire C = flags[1];  // Carry
+    // wire V = flags[0];  // Overflow
+
+    reg cond_true;
+    always @(*) begin
+        case (cond_code)
+            4'b0000: cond_true = Z;                 // EQ: Equal 
+            4'b0001: cond_true = ~Z;                // NE: Not Equal 
+            4'b0010: cond_true = C;                 // CS: Unsigned higher or same
+            4'b0011: cond_true = ~C;                // CC: Unsigned Lower
+            4'b0100: cond_true = N;                 // MI: Minus
+            4'b0101: cond_true = ~N;                // PL: Positive or Zero
+            4'b0110: cond_true = V;                 // VS: Overflow
+            4'b0111: cond_true = ~V;                // VC: No Overflow
+            4'b1000: cond_true = C & ~Z;            // HI: Unsigned Higher
+            4'b1001: cond_true = ~C | Z;            // LS: Unsigned Lower or Same
+            4'b1010: cond_true = N == V;            // GE: Greater or Equal
+            4'b1011: cond_true = N != V;            // LT: Less Than
+            4'b1100: cond_true = ~Z & (N == V);     // GT: Greater Than
+            4'b1101: cond_true = Z | (N != V);      // LE: Less Than or Equal
+            4'b1110: cond_true = 1'b1;              // AL: Always
+            4'b1111: cond_true = 1'b0;              // NV: Never (not used)
+            default: cond_true = 1'b0;              // Default to Never
+        endcase
+    end
+
+    // Detect control hazard
+    always @(*) begin
+        Branch= 1'b0;
+        BranchL = 1'b0;
+
+        if (B_instr && cond_true) Branch = 1'b1;
+        else if (BL_instr && cond_true) begin
+            Branch = 1'b1;
+            BranchL = 1'b1;
+        end
+    end
+
+endmodule
+
+
 module EX_MEM(
        input clk, R,
        input in_EX_load_instr,
@@ -714,10 +824,10 @@ module EX_MEM(
           in_EX_Enable_signal,
 //    input ID_B_instr, ID_BL_instr,
        input [7:0] in_mux_NextPC_Out,
-       input [11:0] in_EX_I_11_0,
-       input [31:0] in_EX_Pb,
+       input [31:0] in_EX_Pd,
        input [3:0] in_EX_Rd_or_14,
        output reg [7:0] mux_NextPC_Out,
+       output reg [31:0] MEM_Pd,
        output reg [3:0] MEM_Rd_or_14,
        output reg MEM_load_instr,
           MEM_RF_enable,
@@ -733,6 +843,9 @@ always @(posedge clk) begin
         MEM_Size_enable <= 1'b0;
         MEM_RW_enable <= 1'b0;
         MEM_Enable_signal <= 1'b0;
+        mux_NextPC_Out <= 8'b0;
+        MEM_Pd <= 32'b0;
+        MEM_Rd_or_14 <= 4'b0;
     end
     else begin
         MEM_load_instr <= in_EX_load_instr;
@@ -740,6 +853,9 @@ always @(posedge clk) begin
         MEM_Size_enable <= in_EX_Size_enable;
         MEM_RW_enable <= in_EX_RW_enable;
         MEM_Enable_signal <= in_EX_Enable_signal;
+        mux_NextPC_Out <= in_mux_NextPC_Out;
+        MEM_Pd <= in_EX_Pd;
+        MEM_Rd_or_14 <= in_EX_Rd_or_14;
     end
 end
 
@@ -748,28 +864,28 @@ endmodule
 module ram256x8 (
     output reg [31:0] DO,
     input E, RW, Size,
-    input [7:0] A, 
+    input [7:0] Addd, 
     input [31:0] DI
 );
    reg[7:0] Mem[0:255];
-   always@(A, RW)
+   always@(Addd, RW)
      case(Size)
             1'b0:
                 //Reading operation
-              if (RW == 1'b0) DO = {24'b000000000000000000000000, Mem[A]}; 
+              if (RW == 1'b0) DO = {24'b000000000000000000000000, Mem[Addd]}; 
                 
                 //Writing Operation
-                else if(RW == 1'b1 && E == 1'b1) Mem[A] = DI[7:0];
+                else if(RW == 1'b1 && E == 1'b1) Mem[Addd] = DI[7:0];
             1'b1:
                 //Reading operation
-                if (RW == 1'b0) DO = {Mem[A], Mem[A+1], Mem[A+2], Mem[A+3]}; //Reading operation
+                if (RW == 1'b0) DO = {Mem[Addd], Mem[Addd+1], Mem[Addd+2], Mem[Addd+3]}; //Reading operation
                 
                 //Writing Operation
                 else if (RW == 1'b1 && E == 1'b1) begin 
-                    Mem[A] = DI[31:24];
-                    Mem[A+1] = DI[23:16];
-                    Mem[A+2] = DI[15:8];
-                    Mem[A+3] = DI[7:0];
+                    Mem[Addd] = DI[31:24];
+                    Mem[Addd+1] = DI[23:16];
+                    Mem[Addd+2] = DI[15:8];
+                    Mem[Addd+3] = DI[7:0];
                 end
         endcase
 endmodule
@@ -779,13 +895,104 @@ module MEM_WB(
     input in_MEM_RF_enable,
     input [7:0] in_EA,
     input [3:0] in_MEM_Rd_or_14,
+    input [31:0] in_MEM_DO,
+    output reg [31:0] out_WB_DO,
     output reg [3:0] WB_Rd_or_14,
     output reg WB_RF_enable
 );
 
 always @(posedge clk) begin
-    if(R) WB_RF_enable <= 1'b0;
-    else WB_RF_enable <= in_MEM_RF_enable;
+    if(R) begin
+        WB_RF_enable <= 1'b0;
+        out_WB_DO <= 32'b0;
+        WB_Rd_or_14 <= 4'b0;
+    end
+    else begin
+        WB_RF_enable <= in_MEM_RF_enable;
+        out_WB_DO <= in_MEM_DO;
+        WB_Rd_or_14 <= in_MEM_Rd_or_14;
+    end
 end
 
+endmodule
+
+module ForwardingUnit (
+    input [3:0] EX_RD, MEM_RD, WB_RD,
+    ID_RM, ID_RN,
+    input EX_RF_enable, MEM_RF_enable, WB_RF_enable,
+    EX_load_instr, MEM_load_instr,
+    output reg FW_LE_SIGNAL, FW_CU_MUX_SIGNAL, FW_MEM_MUX_SIGNAL
+    output reg [1:0] FW_ID_RM_MUX_SIGNAL, FW_ID_RN_MUX_SIGNAL,
+    output reg [3:0] EX_TO_ID_RD, MEM_TO_ID_RD, WB_TO_ID_RD       
+);
+
+// reg [3:0] CURR_EX_RM, MEM_RM, WB_RM, 
+//           CURR_EX_RM, MEM_RN, WB_RN;
+
+// always @(*) begin
+//     //WB
+//     WB_RM = MEM_RM;
+//     WB_RN = MEM_RN;
+//     //MEM
+//     MEM_RM = CURR_EX_RM;
+//     MEM_RN = CURR_EX_RN;
+//     //UPDATE CURR_EX_RM
+//     CURR_EX_RM = EX_RM;
+// end
+//DATA HAZARD CRITERIA
+//FOR RM 
+always @(*) begin
+if((EX_RF_enable && (ID_RM == EX_RD))) begin
+    EX_TO_ID_RD = EX_RD;
+    FW_ID_RM_MUX_SIGNAL = 2'b01;  
+end
+
+else if((MEM_RF_enable && (ID_RM == MEM_RD))) begin 
+    MEM_TO_ID_RD = MEM_RD;
+    FW_ID_RM_MUX_SIGNAL = 2'b10;
+end
+
+else if((WB_RF_enable && (ID_RM == WB_RD))) begin 
+    WB_TO_ID_RD = WB_RD;
+    FW_ID_RM_MUX_SIGNAL = 2'b11;
+end
+
+else FW_ID_RM_MUX_SIGNAL = 2'b00;
+end
+
+//FOR RN
+always @(*) begin
+if((EX_RF_enable && (ID_RN == EX_RD))) begin
+    EX_TO_ID_RD = EX_RD;
+    FW_ID_RN_MUX_SIGNAL = 2'b01;  
+end
+
+else if((MEM_RF_enable && (ID_RN == MEM_RD))) begin 
+    MEM_TO_ID_RD = MEM_RD;
+    FW_ID_RN_MUX_SIGNAL = 2'b10;
+end
+
+else if((WB_RF_enable && (ID_RN == WB_RD))) begin 
+    WB_TO_ID_RD = WB_RD;
+    FW_ID_RN_MUX_SIGNAL = 2'b11;
+end
+
+else FW_ID_RN_MUX_SIGNAL = 2'b00;
+end
+
+//FOR LOAD INSTRUCTIONS
+always @(*) begin
+if((EX_load_instr && ((ID_RN == EX_RD) || (ID_RM == EX_RD)))) begin
+    FW_CU_MUX_SIGNAL = 1'b1;
+    FW_LE_SIGNAL = 1'b0;
+end
+
+else begin 
+    FW_CU_MUX_SIGNAL = 1'b0;
+    FW_LE_SIGNAL = 1'b1;
+end
+
+assign FW_MEM_MUX_SIGNAL = (MEM_load_instr)? 1'b1:1'b0;
+
+end
 endmodule
