@@ -306,7 +306,7 @@ Register_file RF (
            .EX_Size_enable(EX_Size_enable),
            .EX_RW_enable(EX_RW_enable),
            .EX_Enable_signal(EX_Enable_signal),
-           .EX_BL_instr(EX_BL_instr)
+           .EX_BL_enable(BranchL)
            );
 //EX
 alu ALU (
