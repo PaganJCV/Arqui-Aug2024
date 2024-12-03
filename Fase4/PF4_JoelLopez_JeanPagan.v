@@ -3,7 +3,7 @@ assign Y = (S)? A:B;
 endmodule
 
 module mux_8x1(output [7:0] Y_8, input S_8, input [7:0] A_8, B_8);
-assign Y_8 = (S_8) ? B_8 : A_8;
+  assign Y_8 = (S_8) ? A_8 : B_8;
 endmodule
 
 
@@ -931,73 +931,52 @@ module ForwardingUnit (
     output reg [3:0] EX_TO_ID_RD, MEM_TO_ID_RD, WB_TO_ID_RD       
 );
 
-// reg [3:0] CURR_EX_RM, MEM_RM, WB_RM, 
-//           CURR_EX_RM, MEM_RN, WB_RN;
+    // FOR RM
+    always @(*) begin
+        if (EX_RF_enable && (ID_RM == EX_RD)) begin
+            EX_TO_ID_RD = EX_RD;
+            FW_ID_RM_MUX_SIGNAL = 2'b01;  
+        end else if (MEM_RF_enable && (ID_RM == MEM_RD)) begin 
+            MEM_TO_ID_RD = MEM_RD;
+            FW_ID_RM_MUX_SIGNAL = 2'b10;
+        end else if (WB_RF_enable && (ID_RM == WB_RD)) begin 
+            WB_TO_ID_RD = WB_RD;
+            FW_ID_RM_MUX_SIGNAL = 2'b11;
+        end else begin
+            FW_ID_RM_MUX_SIGNAL = 2'b00; // Default
+        end
+    end
 
-// always @(*) begin
-//     //WB
-//     WB_RM = MEM_RM;
-//     WB_RN = MEM_RN;
-//     //MEM
-//     MEM_RM = CURR_EX_RM;
-//     MEM_RN = CURR_EX_RN;
-//     //UPDATE CURR_EX_RM
-//     CURR_EX_RM = EX_RM;
-// end
-//DATA HAZARD CRITERIA
-//FOR RM 
-always @(*) begin
-if((EX_RF_enable && (ID_RM == EX_RD))) begin
-    EX_TO_ID_RD = EX_RD;
-    FW_ID_RM_MUX_SIGNAL = 2'b01;  
-end
+    // FOR RN
+    always @(*) begin
+        if (EX_RF_enable && (ID_RN == EX_RD)) begin
+            EX_TO_ID_RD = EX_RD;
+            FW_ID_RN_MUX_SIGNAL = 2'b01;  
+        end else if (MEM_RF_enable && (ID_RN == MEM_RD)) begin 
+            MEM_TO_ID_RD = MEM_RD;
+            FW_ID_RN_MUX_SIGNAL = 2'b10;
+        end else if (WB_RF_enable && (ID_RN == WB_RD)) begin 
+            WB_TO_ID_RD = WB_RD;
+            FW_ID_RN_MUX_SIGNAL = 2'b11;
+        end else begin
+            FW_ID_RN_MUX_SIGNAL = 2'b00; // Default
+        end
+    end
 
-else if((MEM_RF_enable && (ID_RM == MEM_RD))) begin 
-    MEM_TO_ID_RD = MEM_RD;
-    FW_ID_RM_MUX_SIGNAL = 2'b10;
-end
+    // FOR LOAD INSTRUCTIONS
+    always @(*) begin
+        // Default values
+        FW_LE_SIGNAL = 1'b1;
+        FW_CU_MUX_SIGNAL = 1'b0;
 
-else if((WB_RF_enable && (ID_RM == WB_RD))) begin 
-    WB_TO_ID_RD = WB_RD;
-    FW_ID_RM_MUX_SIGNAL = 2'b11;
-end
+        if (EX_load_instr && ((ID_RN == EX_RD) || (ID_RM == EX_RD))) begin
+            FW_CU_MUX_SIGNAL = 1'b1; // Forwarding hazard detected
+            FW_LE_SIGNAL = 1'b0;     // Disable LE
+        end
+    end
 
-else FW_ID_RM_MUX_SIGNAL = 2'b00;
-end
-
-//FOR RN
-always @(*) begin
-if((EX_RF_enable && (ID_RN == EX_RD))) begin
-    EX_TO_ID_RD = EX_RD;
-    FW_ID_RN_MUX_SIGNAL = 2'b01;  
-end
-
-else if((MEM_RF_enable && (ID_RN == MEM_RD))) begin 
-    MEM_TO_ID_RD = MEM_RD;
-    FW_ID_RN_MUX_SIGNAL = 2'b10;
-end
-
-else if((WB_RF_enable && (ID_RN == WB_RD))) begin 
-    WB_TO_ID_RD = WB_RD;
-    FW_ID_RN_MUX_SIGNAL = 2'b11;
-end
-
-else FW_ID_RN_MUX_SIGNAL = 2'b00;
-end
-
-//FOR LOAD INSTRUCTIONS
-always @(*) begin
-if((EX_load_instr && ((ID_RN == EX_RD) || (ID_RM == EX_RD)))) begin
-    FW_CU_MUX_SIGNAL = 1'b1;
-    FW_LE_SIGNAL = 1'b0;
-end
-
-else begin 
-    FW_CU_MUX_SIGNAL = 1'b0;
-    FW_LE_SIGNAL = 1'b1;
-end
-
-FW_MEM_MUX_SIGNAL = (MEM_load_instr)? 1'b1:1'b0;
-
-end
+    // FOR MEMORY INSTRUCTIONS
+    always @(*) begin
+        FW_MEM_MUX_SIGNAL = MEM_load_instr ? 1'b1 : 1'b0; // Enable MEM forwarding
+    end
 endmodule
