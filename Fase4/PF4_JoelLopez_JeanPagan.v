@@ -898,7 +898,7 @@ endmodule
 module MEM_WB(
     input clk, R,
     input in_MEM_RF_enable,
-    input [7:0] in_EA,
+    //input [7:0] in_EA,
     input [3:0] in_MEM_Rd_or_14,
     input [31:0] in_MEM_DO,
     output reg [31:0] out_WB_DO,

@@ -395,14 +395,20 @@ ram256x8 RAM (
 mux_32x1 mem_mux(
     .Y_32(out_RAM_mux),
     .A_32(DO),
-    .B_32(mux_NextPC_Out),
+  .B_32({24'b0, mux_NextPC_Out}),
     .S_32(MEM_load_instr)
 );
 
 //
 //
                       
-  MEM_WB memwb(.clk(clk), .R(R), .in_MEM_RF_enable(MEM_RF_enable), .WB_RF_enable(WB_RF_enable));
+  MEM_WB memwb(.clk(clk), .R(R), .in_MEM_RF_enable(MEM_RF_enable), 
+                .in_MEM_Rd_or_14(MEM_Rd_or_14),
+                .in_MEM_DO(DO),
+                .out_WB_DO(out_WB_DO),
+                .WB_Rd_or_14(WB_Rd_or_14), 
+                .WB_RF_enable(WB_RF_enable)
+                );
 
 
   ForwardingUnit UNIDAD (
