@@ -370,7 +370,10 @@ PSR psr(
     .PSR_flags(PSR_flags)
 );
 
-assign alu_flags_conc = {N, Z, C, V};
+always @(posedge clk)begin
+   alu_flags_conc <= {N, Z,C,V};
+end
+
 mux_4x1 flags_mux(
     .Y_4(out_flags_mux),
     .A_4(alu_flags_conc),
