@@ -218,6 +218,7 @@ Register_file RF (
     .PD(PD)
   );
 
+
   //RN
   RF_big_mux PA_mux(
     .in_PX(PA), 
@@ -264,7 +265,7 @@ Register_file RF (
                       .mux_AM(AM), 
                       .mux_S_enable(S_enable), 
                       .mux_load_instr(load_instr),
-                      .mux_RF_enable(RF_enable),
+                      .mux_RF_enable(out_RF_mux),
                       .mux_Size_enable(Size_enable),
                       .mux_RW_enable(RW_enable),
                       .mux_Enable_signal(Enable_signal),
@@ -342,9 +343,7 @@ PSR psr(
     .PSR_flags(PSR_flags)
 );
 
-always @(posedge clk)begin
-   alu_flags_conc <= {N, Z, C, V};
-end
+assign alu_flags_conc = {N, Z, C, V};
 mux_4x1 flags_mux(
     .Y_4(out_flags_mux),
     .A_4(alu_flags_conc),
@@ -459,10 +458,8 @@ mux_32x1 mem_mux(
         $fclose(fi);
     end
 
- //initial begin
-   //$monitor("CLK: %d | Time: %d | PC: %d | out_RN: %b", clk, $time, out_result_PC, PA);
-//end
-
-
-
+ initial begin
+   $monitor("clk: %d | pc=%0d | LE=%b | Keyword: %s | RW=%b | RA=%b | RB=%b | RD=%b | PW=%d | PA=%d | PB=%d | PD=%d, Branch", clk,
+         out_result_PC, WB_RF_enable, keyword, WB_Rd_or_14, I_19_16_Rn, I_3_0_Rm, I_15_12_Rd, WB_RF_enable, PA, PB, PD, Branch);
+ end
 endmodule
