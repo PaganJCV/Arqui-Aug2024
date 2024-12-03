@@ -388,7 +388,7 @@ ram256x8 RAM (
         .E(MEM_Enable_signal),
         .RW(MEM_RW_enable),
         .Size(MEM_Size_enable),
-        .Addd(mux_NextPC_Out),
+        .A(mux_NextPC_Out),
         .DI(MEM_Pd)
     );
 
@@ -426,6 +426,7 @@ mux_32x1 mem_mux(
     );
 //
 
+    // Control de Señales Iniciales
     initial begin
         clk = 0;
       repeat(20) #2 clk = ~clk; 
@@ -433,92 +434,34 @@ mux_32x1 mem_mux(
 
     // Control de Señales Iniciales
     initial begin
-        // Reset and initialize control signals
-        R = 1;
-        clk = 0;
-        E = MEM_Enable_signal;
-        RW = MEM_RW_enable;
-        Size = MEM_Size_enable; // Default word access
-        Addd = 8'd0;
-        DI = 32'd0;
-
-        // Control Clock
-        #5 R = 0;  // Release Reset
-        forever #2 clk = ~clk;  // Clock generation (period of 4 units)
+        R = 1; // Reset en 1 al inicio
+      in_pc = 0;  
+      LE = 1; // Enable de PC e IF/ID
+        S = 0; // Multiplexor en 0
+        #3 R = 0; // Reset cambia a 0 en tiempo 3
+        #32 S = 1; // Multiplexor cambia a 1 en tiempo 32
     end
 
-    initial begin
-    // ROM Preload
-    fi = $fopen("rom_input_file.txt", "r");
-    if (fi == 0) begin
-        $display("Error: Could not open rom_input_file.txt");
-        $finish;
-    end
-    address = 8'd0;
-    while (!$feof(fi)) begin
-        code = $fscanf(fi, "%b", dataIN);
-        rom.Mem[address] = dataIN[7:0]; // Load each byte
-        address = address + 1;
-    end
-    $fclose(fi);
-
-    // RAM Preload
-    fi = $fopen("ram_input_file.txt", "r");
-    if (fi == 0) begin
-        $display("Error: Could not open ram_input_file.txt");
-        $finish;
-    end
-    Addd = 8'd0;
-    while (!$feof(fi)) begin
-        code = $fscanf(fi, "%b", dataIN);
-        RAM.Mem[Addd] = dataIN[7:0]; // Load each byte
-        Addd = Addd + 1;
-    end
-    $fclose(fi);
-end
-
-
-initial begin
-        // Step 1: Read word from RAM address 52, store in N
-        #10;
-        E = 1; // Enable RAM
-        RW = 0; // Read mode
-        Size = 1; // Word access (32 bits)
-        A = 8'd52;
-        #5; // Wait for read operation
-        N = DO; // Store result in N register
-
-        // Step 2: Read byte from RAM address 56, store in A
-        Size = 0; // Byte access (8 bits)
-        A = 8'd56;
-        #5; // Wait for read operation
-        A = DO[7:0]; // Store result in A register (only 8 bits)
-
-        // Step 3: Read byte from RAM address 57, store in B
-        A = 8'd57;
-        #5; // Wait for read operation
-        B = DO[7:0]; // Store result in B register (only 8 bits)
-
-        // Step 4: Compute based on the value of N
-        if (N[31] == 1'b0) begin
-            // N is positive, compute A + B
-            result = A + B;
-        end else begin
-            // N is negative, compute B - A
-            result = B - A;
+   initial begin
+        fi = $fopen("input_file.txt", "r");
+        if (fi == 0) begin
+            $display("Error: No se pudo abrir el archivo input_file.txt");
+            $finish;
         end
-
-        // Step 5: Write result to RAM address 58
-        RW = 1; // Write mode
-        Size = 0; // Byte access (8 bits)
-        A = 8'd58;
-        DI = {24'b0, result}; // Extend result to 32 bits for writing
-        #5; // Wait for write operation
-
-        // Finish the simulation
-        #10;
-        $display("Simulation Completed. Result stored at address 58: %h", result);
-        $finish;
+        // Leer cada instrucción y cargar en ROM Y RAM
+        address = 8'b00000000;
+        A = 8'b0;
+        while (!$feof(fi)) begin
+            code = $fscanf(fi, "%b", dataIN);
+            rom.Mem[address] = dataIN;
+          RAM.Mem[A] = dataIN;
+            address = address + 1;
+          A = A + 1;
+        end
+        $fclose(fi);
     end
+
+ 
+
 
 endmodule
