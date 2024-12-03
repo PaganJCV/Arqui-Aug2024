@@ -212,7 +212,7 @@ Register_file RF (
     .RD(I_15_12_Rd),
     .RW(WB_Rd_or_14),
   .PC({24'b0, out_pc}),
-    .PW(PW),
+    .PW(out_WB_DO),
     .PA(PA),
     .PB(PB),
     .PD(PD)
@@ -234,7 +234,7 @@ Register_file RF (
     .EX_TO_ID_RD(out_ALU_mux), 
     .MEM_TO_ID_RD(out_RAM_mux), 
     .WB_TO_ID_RD(out_WB_DO), 
-    .FW_ID_RX_MUX_SIGNAL(FW_ID_RN_MUX_SIGNAL), 
+    .FW_ID_RX_MUX_SIGNAL(FW_ID_RM_MUX_SIGNAL), 
     .Px(out_RM)
 );
 
@@ -308,7 +308,7 @@ Register_file RF (
 //EX
 alu ALU (
         .opcode(EX_opcode),
-        .OperandA(out_RN),
+        .OperandA(EX_Pa),
         .OperandB(N_Shift),
         .c0(PSR_flags[1]), 
   .result(result_ALU),
@@ -326,7 +326,7 @@ mux_32x1 alu_out_mux(
 );
 
 Shifter shift (
-        .Rm(out_RM),
+        .Rm(EX_Pb),
         .I(EX_I_11_0),
         .AM(EX_AM),
         .N_Shift(N_Shift)
@@ -401,7 +401,7 @@ mux_32x1 mem_mux(
                       
   MEM_WB memwb(.clk(clk), .R(R), .in_MEM_RF_enable(MEM_RF_enable), 
                 .in_MEM_Rd_or_14(MEM_Rd_or_14),
-                .in_MEM_DO(DO),
+                .in_MEM_DO(out_RAM_mux),
                 .out_WB_DO(out_WB_DO),
                 .WB_Rd_or_14(WB_Rd_or_14), 
                 .WB_RF_enable(WB_RF_enable)
@@ -457,11 +457,10 @@ mux_32x1 mem_mux(
         $fclose(fi);
     end
 
- initial begin
-   $monitor("Time: %d, LE: %b, R: %d, PC_in: %d, PC_out: %d",
-             $time, FW_LE_SIGNAL, R, out_result_PC, result, );
+ //initial begin
+   //$monitor("CLK: %d | Time: %d | PC: %d | out_RN: %b", clk, $time, out_result_PC, PA);
+//end
 
-    end
 
 
 endmodule
