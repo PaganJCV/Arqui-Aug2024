@@ -453,10 +453,10 @@ mux_32x1 mem_mux(
         $fclose(fi);
     end
 
- //initial begin
-   //$monitor("CLK: %d | Time: %d | PC: %d | out_RN: %b", clk, $time, out_result_PC, PA);
-//end
-
+ initial begin
+   $monitor("clk: %d | pc=%0d | LE=%b | Keyword: %s | RW=%b | RA=%b | RB=%b | RD=%b | PW=%d | PA=%d | PB=%d | PD=%d, Branch", clk,
+         out_result_PC, WB_RF_enable, keyword, WB_Rd_or_14, I_19_16_Rn, I_3_0_Rm, I_15_12_Rd, WB_RF_enable, PA, PB, PD, Branch);
+ end
 
 
 endmodule
