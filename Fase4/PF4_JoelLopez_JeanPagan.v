@@ -117,7 +117,7 @@ module Register_file(input clk, LE , input [3:0] RA, RB, RD, RW, input [31:0] PC
   Regi_32 R3 (Q3, PW, O[3], clk);
   Regi_32 R4 (Q4, PW, O[4], clk);
   Regi_32 R5 (Q5, PW, O[5], clk);
-  Regi_32 R6 (Q5, PW, O[6], clk);
+  Regi_32 R6 (Q6, PW, O[6], clk);
   Regi_32 R7 (Q7, PW, O[7], clk);
   Regi_32 R8 (Q8, PW, O[8], clk);
   Regi_32 R9 (Q9, PW, O[9], clk);
@@ -126,14 +126,14 @@ module Register_file(input clk, LE , input [3:0] RA, RB, RD, RW, input [31:0] PC
   Regi_32 R12 (Q12, PW, O[12], clk);
   Regi_32 R13 (Q13, PW, O[13], clk);
   Regi_32 R14 (Q14, PW, O[14], clk);
-  Mux_32 mux_A (PA, RA, Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13, Q14, PC);
-  Mux_32 mux_B (PB, RB, Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13, Q14, PC);
-  Mux_32 mux_D (PD, RD, Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13, Q14, PC);
+  Regi_32 R15 (Q15, PC, 1'b1, clk);
 
+  Mux_32 mux_A (PA, RA, Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13, Q14, Q15);
+  Mux_32 mux_B (PB, RB, Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13, Q14, Q15);
+  Mux_32 mux_D (PD, RD, Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13, Q14, Q15);
 endmodule
 
-module Regi_32 (output reg [31:0] o_regi, input [31:0] i_regi, input
-LE, Clk);
+module Regi_32 (output reg [31:0] o_regi, input [31:0] i_regi, input LE, Clk);
 always @ (posedge Clk)
 if (LE) o_regi <= i_regi;
 endmodule

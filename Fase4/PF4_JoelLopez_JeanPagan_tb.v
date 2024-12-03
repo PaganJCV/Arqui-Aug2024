@@ -22,7 +22,7 @@ module PPU;
     wire [7:0] out_result_PC;
 
     //MUX RN, RM
-  reg [31:0] in_Px;
+    reg [31:0] in_Px;
     wire [31:0] out_RN;
     wire [31:0] out_RM;
 
@@ -39,8 +39,8 @@ module PPU;
     wire [7:0] result;
   
   	//ROM
-  reg [7:0] address;
-  wire [31:0] Instruction;
+    reg [7:0] address;
+    wire [31:0] Instruction;
 
     //IF_ID 
     reg [31:0] rom_instruction;
@@ -54,13 +54,13 @@ module PPU;
     wire [7:0] Target_add;
 
    //Register File
-   reg [31:0] PW;
-   wire [31:0] PA, PB, PD;
+    reg [31:0] PW;
+    wire [31:0] PA, PB, PD;
 
     //Control Unit
     reg [31:0] in_instruction;
     wire [3:0] opcode;
-  wire [1:0] AM;
+    wire [1:0] AM;
     wire S_enable,
          load_instr,
          RF_enable,
@@ -69,12 +69,12 @@ module PPU;
          Enable_signal,
          BL_instr,
          B_instr;
-  wire [47:0] keyword;
+    wire [47:0] keyword;
 
     //CU mux
     reg S;
     reg [3:0] mux_opcode;
-  reg [1:0] mux_AM;
+    reg [1:0] mux_AM;
     reg mux_S_enable,
         mux_load_instr,
         mux_RF_enable,
@@ -84,7 +84,7 @@ module PPU;
         mux_BL_instr,
         mux_B_instr;
     wire [3:0] ID_opcode;
-  wire [1:0] ID_AM;
+    wire [1:0] ID_AM;
     wire ID_S_enable,
          ID_load_instr,
          ID_RF_enable,
@@ -96,10 +96,10 @@ module PPU;
 
     //ID_EX
     reg [31:0] Pa, Pb, Pd;
-  reg [3:0] in_Rd_or_14;
-  reg [11:0] in_I_11_0;
+    reg [3:0] in_Rd_or_14;
+    reg [11:0] in_I_11_0;
     reg [3:0] in_ID_opcode;
-  reg [1:0] in_ID_AM;
+    reg [1:0] in_ID_AM;
     reg   in_ID_S_enable,
           in_ID_load_instr,
           in_ID_RF_enable,
@@ -109,11 +109,11 @@ module PPU;
     wire [7:0] EX_next_pc;
     wire [31:0] EX_Pa, EX_Pb, EX_Pd;
     wire [11:0] EX_I_11_0;  
-	wire [3:0] EX_Rd_or_14; 
-	wire EX_BL_instr;      
-	wire EX_BL_enable;      
+	  wire [3:0] EX_Rd_or_14; 
+	  wire EX_BL_instr;      
+	  wire EX_BL_enable;      
     wire [3:0] EX_opcode;
-  wire [1:0] EX_AM;
+    wire [1:0] EX_AM;
     wire   EX_S_enable,
           EX_load_instr,
           EX_RF_enable,
@@ -124,7 +124,7 @@ module PPU;
     //SHIFTER
     reg [31:0] Rm;
     reg [11:0] I;
-  reg [1:0] in_AM;
+    reg [1:0] in_AM;
     wire [31:0] N_Shift;
 
     //ALU
@@ -142,20 +142,16 @@ module PPU;
     wire [3:0] PSR_flags;
 
     //EX_MEM
-    reg   in_EX_load_instr,
-          in_EX_RF_enable,
-          in_EX_Size_enable,
-          in_EX_RW_enable,
-          in_EX_Enable_signal;
+    reg in_EX_load_instr,
+    in_EX_RF_enable,
+    in_EX_Size_enable,
+    in_EX_RW_enable,
+    in_EX_Enable_signal;
     reg [7:0] in_mux_NextPC_Out;
     reg [11:0] in_EX_I_11_0;
     reg [31:0] in_EX_Pd;
     reg [3:0] IN_EX_Rd_or_14;
-    wire  MEM_load_instr,
-          MEM_RF_enable,
-          MEM_Size_enable,
-          MEM_RW_enable,
-          MEM_Enable_signal;
+    wire MEM_load_instr, MEM_RF_enable, MEM_Size_enable, MEM_RW_enable, MEM_Enable_signal;
     wire [7:0] mux_NextPC_Out;
     wire [3:0] MEM_Rd_or_14;
     wire [31:0] MEM_Pd;
@@ -176,7 +172,7 @@ module PPU;
     wire WB_RF_enable;
 
     //FOWARDING UNIT
-  reg [3:0] EX_RD, MEM_RD, WB_RD, ID_RM, ID_RN;
+    reg [3:0] EX_RD, MEM_RD, WB_RD, ID_RM, ID_RN;
     wire FW_LE_SIGNAL, FW_CU_MUX_SIGNAL, FW_MEM_MUX_SIGNAL;
     wire [1:0] FW_ID_RM_MUX_SIGNAL, FW_ID_RN_MUX_SIGNAL;
     wire [3:0] EX_TO_ID_RD, MEM_TO_ID_RD, WB_TO_ID_RD;
@@ -211,8 +207,8 @@ Register_file RF (
     .RB(I_3_0_Rm),
     .RD(I_15_12_Rd),
     .RW(WB_Rd_or_14),
-  .PC({24'b0, out_pc}),
-    .PW(PW),
+    .PC({24'b0, out_pc}),
+    .PW(out_WB_DO),
     .PA(PA),
     .PB(PB),
     .PD(PD)
@@ -234,7 +230,7 @@ Register_file RF (
     .EX_TO_ID_RD(out_ALU_mux), 
     .MEM_TO_ID_RD(out_RAM_mux), 
     .WB_TO_ID_RD(out_WB_DO), 
-    .FW_ID_RX_MUX_SIGNAL(FW_ID_RN_MUX_SIGNAL), 
+    .FW_ID_RX_MUX_SIGNAL(FW_ID_RM_MUX_SIGNAL), 
     .Px(out_RM)
 );
 
@@ -399,11 +395,10 @@ mux_32x1 mem_mux(
 );
 
 //
-//
                       
   MEM_WB memwb(.clk(clk), .R(R), .in_MEM_RF_enable(MEM_RF_enable), 
                 .in_MEM_Rd_or_14(MEM_Rd_or_14),
-                .in_MEM_DO(DO),
+                .in_MEM_DO(out_RAM_mux),
                 .out_WB_DO(out_WB_DO),
                 .WB_Rd_or_14(WB_Rd_or_14), 
                 .WB_RF_enable(WB_RF_enable)
@@ -452,7 +447,7 @@ mux_32x1 mem_mux(
         while (!$feof(fi)) begin
             code = $fscanf(fi, "%b", dataIN);
             rom.Mem[address] = dataIN;
-          RAM.Mem[A] = dataIN;
+            RAM.Mem[A] = dataIN;
             address = address + 1;
           A = A + 1;
         end
@@ -460,10 +455,12 @@ mux_32x1 mem_mux(
     end
 
  initial begin
-   $monitor("Time: %d, LE: %b, R: %d, PC_in: %d, PC_out: %d",
-             $time, FW_LE_SIGNAL, R, out_result_PC, result, );
+   //$monitor("Time: %d, LE: %b, R: %d, PC_in: %d, PC_out: %d",
+             //$time, FW_LE_SIGNAL, R, out_result_PC, result );
 
-    end
+   $monitor("PC: %d, Q1: %d, Q2: %d, Q3: %d, Q4: %d, Q5: %d, Q6: %d",
+   out_result_PC, out_WB_DO, RF.Q2, RF.Q3, RF.Q4, RF.Q5, RF.Q6 );
+  end
 
 
 endmodule
