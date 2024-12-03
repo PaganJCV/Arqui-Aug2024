@@ -244,24 +244,21 @@ Register_file RF (
  TA ta(.in_I_23_0(I_23_0), .in_next_pc(result), .Target_add(Target_add));
 
  //MUX RD
- assign fourteen_decimal = 4'b1110;
- mux_4x1 RD_mux(.Y_4(out_RD_mux), .A_4(fourteen_decimal), .B_4(I_15_12_Rd), .S_4(BranchL));
+ mux_4x1 RD_mux(.Y_4(out_RD_mux), .A_4(4'b1110), .B_4(I_15_12_Rd), .S_4(BranchL));
 
-  assign in_instruction = instruction;
-  Control_Unit cu_tb(in_instruction, opcode, 
-               AM,
-               S_enable,
-               load_instr,
-               RF_enable,
-               Size_enable,
-               RW_enable,
-               Enable_signal,
-               BL_instr,
-               B_instr,
-               keyword);
+  Control_Unit cu_tb(.in_instruction(instruction), .opcode(opcode), 
+               .AM(AM),
+               .S_enable(S_enable),
+               .load_instr(load_instr),
+               .RF_enable(RF_enable),
+               .Size_enable(Size_enable),
+               .RW_enable(RW_enable),
+               .Enable_signal(Enable_signal),
+               .BL_instr(BL_instr),
+               .B_instr(B_instr),
+               .keyword(keyword));
 
-  assign one_bit = 1'b1;
-  mux_2x1 RF_en(.Y(out_RF_mux), .S(BranchL), .A(one_bit), .B(RF_enable));             
+  mux_2x1 RF_en(.Y(out_RF_mux), .S(BranchL), .A(1'b1), .B(RF_enable));             
 
   CU_mux  cu_mux_tb(.S(FW_CU_MUX_SIGNAL), .mux_opcode(opcode),  
                       .mux_AM(AM), 
@@ -461,7 +458,18 @@ mux_32x1 mem_mux(
         $fclose(fi);
     end
 
- 
+ initial begin
+        $display(
+            "Time: %d, PC: %d, Address: %d, r1: %d, r2: %d, r3: %d, r5: %d", 
+            $time, 
+            in_pc, 
+            A, 
+            RF.Q1, 
+            RF.Q2, 
+            RF.Q3, 
+            RF.Q5
+        );
+    end
 
 
 endmodule
