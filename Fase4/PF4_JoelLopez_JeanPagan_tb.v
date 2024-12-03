@@ -56,6 +56,7 @@ module PPU;
    //Register File
     reg [31:0] PW;
     wire [31:0] PA, PB, PD;
+    wire [31:0] monQ0, monQ1, monQ2, monQ3, monQ4, monQ5, monQ6, monQ7, monQ8, monQ9, monQ10, monQ11, monQ12, monQ13, monQ14, monQ15;
 
     //Control Unit
     reg [31:0] in_instruction;
@@ -200,19 +201,49 @@ module PPU;
 
 // 
 //ID 
-Register_file RF (
-    .clk(clk),
-    .LE(WB_RF_enable),
-    .RA(I_19_16_Rn),
-    .RB(I_3_0_Rm),
-    .RD(I_15_12_Rd),
-    .RW(WB_Rd_or_14),
-    .PC({24'b0, out_pc}),
-    .PW(out_WB_DO),
-    .PA(PA),
-    .PB(PB),
-    .PD(PD)
-  );
+// Register_file RF (
+//     .clk(clk),
+//     .LE(WB_RF_enable),
+//     .RA(I_19_16_Rn),
+//     .RB(I_3_0_Rm),
+//     .RD(I_15_12_Rd),
+//     .RW(WB_Rd_or_14),
+//     .PC({24'b0, out_pc}),
+//     .PW(out_WB_DO),
+//     .PA(PA),
+//     .PB(PB),
+//     .PD(PD)
+//   );
+
+  Register_File RF (
+        .LE(WB_RF_enable),
+        .clk(clk),
+        .PC({24'b0, out_pc}),
+        .PW(out_WB_DO),
+        .RD(I_15_12_Rd),
+        .RB(I_3_0_Rm),
+        .RA(I_19_16_Rn),
+        .RW(WB_Rd_or_14),
+        .PA(PA),
+        .PB(PB),
+        .PD(PD),
+        .monQ0(monQ0),
+        .monQ1(monQ1),
+        .monQ2(monQ2),
+        .monQ3(monQ3),
+        .monQ4(monQ4),
+        .monQ5(monQ5),
+        .monQ6(monQ6),
+        .monQ7(monQ7),
+        .monQ8(monQ8),
+        .monQ9(monQ9),
+        .monQ10(monQ10),
+        .monQ11(monQ11),
+        .monQ12(monQ12),
+        .monQ13(monQ13),
+        .monQ14(monQ14),
+        .monQ15(monQ15)
+    );
 
 
   //RN
@@ -454,8 +485,8 @@ mux_32x1 mem_mux(
     end
 
  initial begin
-   $monitor("clk: %d | pc=%0d | LE=%b | Keyword: %s | RW=%b | RA=%b | RB=%b | RD=%b | PW=%d | PA=%d | PB=%d | PD=%d, Branch", clk,
-         out_result_PC, WB_RF_enable, keyword, WB_Rd_or_14, I_19_16_Rn, I_3_0_Rm, I_15_12_Rd, WB_RF_enable, PA, PB, PD, Branch);
+   $monitor("clk: %d | pc=%0d | LE=%b | Keyword: %s | RA=%b | RB=%b | RD=%b | PW=%d | R1=%b | R2=%b | R3=%b, R5= %b | R6= %b", clk,
+         out_result_PC, WB_RF_enable, keyword, I_19_16_Rn, I_3_0_Rm, I_15_12_Rd, WB_RF_enable,monQ1, monQ2, monQ3, monQ5, monQ6);
  end
 
 

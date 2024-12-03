@@ -93,94 +93,115 @@ endmodule
 
 /////////REGISTER FILE/////////
 
-module Register_file(
-    input clk, LE,
-    input [3:0] RA, RB, RD, RW,
-    input [31:0] PC, PW,
-    output [31:0] PA, PB, PD
-);
-    wire [15:0] O;
-    wire [31:0] Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13, Q14, Q15;
+module Register_File(
+        input LE, clk,
+        input [31:0] PC,PW,
+        input [3:0] RD,RB,RA,RW,
+        output [31:0] PD,PB,PA,
+        output reg [31:0] monQ0,monQ1,monQ2,monQ3,monQ4,monQ5,monQ6,monQ7,monQ8,monQ9,monQ10,monQ11,monQ12,monQ13,monQ14,monQ15
+        );
 
-    bin_deco bin1 (O, RW, LE);
-    Regi_32 R0 (Q0, PW, O[0], clk);
-    Regi_32 R1 (Q1, PW, O[1], clk);
-    Regi_32 R2 (Q2, PW, O[2], clk);
-    Regi_32 R3 (Q3, PW, O[3], clk);
-    Regi_32 R4 (Q4, PW, O[4], clk);
-    Regi_32 R5 (Q5, PW, O[5], clk);
-    Regi_32 R6 (Q6, PW, O[6], clk);
-    Regi_32 R7 (Q7, PW, O[7], clk);
-    Regi_32 R8 (Q8, PW, O[8], clk);
-    Regi_32 R9 (Q9, PW, O[9], clk);
-    Regi_32 R10 (Q10, PW, O[10], clk);
-    Regi_32 R11 (Q11, PW, O[11], clk);
-    Regi_32 R12 (Q12, PW, O[12], clk);
-    Regi_32 R13 (Q13, PW, O[13], clk);
-    Regi_32 R14 (Q14, PW, O[14], clk);
+        wire [15:0] regnum;
+        wire [31:0] Q0,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10,Q11,Q12,Q13,Q14,Q15;
 
-    // Ensure R15 always holds PC
-    assign Q15 = PC;
+        //declarando los modulos individuales las veces necesarias para hacer un three port register file y haciendo las 
+        //conneciones necesarias
+        decoder decoder1(.regnum(regnum),.LE(LE),.RW(RW));
 
-    Mux_32 mux_A (PA, RA, Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13, Q14, Q15);
-    Mux_32 mux_B (PB, RB, Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13, Q14, Q15);
-    Mux_32 mux_D (PD, RD, Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13, Q14, Q15);
-endmodule
+        register R0(.LE(regnum[0]), .clk(clk), .PW(PW), .Q(Q0));
+        register R1(.LE(regnum[1]), .clk(clk), .PW(PW), .Q(Q1));
+        register R2(.LE(regnum[2]), .clk(clk), .PW(PW), .Q(Q2));
+        register R3(.LE(regnum[3]), .clk(clk), .PW(PW), .Q(Q3));
+        register R4(.LE(regnum[4]), .clk(clk), .PW(PW), .Q(Q4));
+        register R5(.LE(regnum[5]), .clk(clk), .PW(PW), .Q(Q5));
+        register R6(.LE(regnum[6]), .clk(clk), .PW(PW), .Q(Q6));
+        register R7(.LE(regnum[7]), .clk(clk), .PW(PW), .Q(Q7));
+        register R8(.LE(regnum[8]), .clk(clk), .PW(PW), .Q(Q8));
+        register R9(.LE(regnum[9]), .clk(clk), .PW(PW), .Q(Q9));
+        register R10(.LE(regnum[10]), .clk(clk), .PW(PW), .Q(Q10));
+        register R11(.LE(regnum[11]), .clk(clk), .PW(PW), .Q(Q11));
+        register R12(.LE(regnum[12]), .clk(clk), .PW(PW), .Q(Q12));
+        register R13(.LE(regnum[13]), .clk(clk), .PW(PW), .Q(Q13));
+        register R14(.LE(regnum[14]), .clk(clk), .PW(PW), .Q(Q14));
+        register R15(.LE(regnum[15]), .clk(clk), .PW(PC), .Q(Q15));
 
-module Regi_32 (output reg [31:0] o_regi, input [31:0] i_regi, input LE, Clk);
-always @ (posedge Clk)
-if (LE) o_regi <= i_regi;
-endmodule
+        in16out1mux mux1(.Y(PA),.R(RA),.Q0(Q0),.Q1(Q1),.Q2(Q2),.Q3(Q3),.Q4(Q4),.Q5(Q5),.Q6(Q6),.Q7(Q7),.Q8(Q8),.Q9(Q9),.Q10(Q10),.Q11(Q11),.Q12(Q12),.Q13(Q13),.Q14(Q14),.Q15(Q15));
 
-module bin_deco (output reg [15:0] o_deco , input [3:0] i_deco, input E );
-always@* begin
-    if (E) case (i_deco)
-            4'd0: o_deco = 16'h1;
-            4'd1: o_deco = 16'h2;
-            4'd2: o_deco = 16'h4;
-            4'd3: o_deco = 16'h8;
-            4'd4: o_deco = 16'h10;
-            4'd5: o_deco = 16'h20;
-            4'd6: o_deco = 16'h40;
-            4'd7: o_deco = 16'h80;
-            4'd8: o_deco = 16'h100;
-            4'd9: o_deco = 16'h200;
-            4'd10: o_deco = 16'h400;
-            4'd11: o_deco = 16'h800;
-            4'd12: o_deco = 16'h1000;
-            4'd13: o_deco = 16'h2000;
-            4'd14: o_deco = 16'h4000;
-            4'd15: o_deco = 16'h8000;
-        endcase
-        else o_deco = 16'h0;
-    end
-endmodule
+        in16out1mux mux2(.Y(PB),.R(RB),.Q0(Q0),.Q1(Q1),.Q2(Q2),.Q3(Q3),.Q4(Q4),.Q5(Q5),.Q6(Q6),.Q7(Q7),.Q8(Q8),.Q9(Q9),.Q10(Q10),.Q11(Q11),.Q12(Q12),.Q13(Q13),.Q14(Q14),.Q15(Q15));
 
-module Mux_32 (
-    output reg [31:0] o_mux,
-    input [3:0] i_mux,
-    input [31:0] Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, Z12, Z13, Z14, Z15
-);
-always @ (i_mux , Z0, Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, Z12, Z13, Z14, Z15)
-    case (i_mux)
-        4'b0000: o_mux = Z0;
-        4'b0001: o_mux = Z1;
-        4'b0010: o_mux = Z2;
-        4'b0011: o_mux = Z3;
-        4'b0100: o_mux = Z4;
-        4'b0101: o_mux = Z5;
-        4'b0110: o_mux = Z6;
-        4'b0111: o_mux = Z7;
-        4'b1000: o_mux = Z8;
-        4'b1001: o_mux = Z9;
-        4'b1010: o_mux = Z10;
-        4'b1011: o_mux = Z11;
-        4'b1100: o_mux = Z12;
-        4'b1101: o_mux = Z13;
-        4'b1110: o_mux = Z14;
-        4'b1111: o_mux = Z15;
-    endcase
-endmodule
+        in16out1mux mux3(.Y(PD),.R(RD),.Q0(Q0),.Q1(Q1),.Q2(Q2),.Q3(Q3),.Q4(Q4),.Q5(Q5),.Q6(Q6),.Q7(Q7),.Q8(Q8),.Q9(Q9),.Q10(Q10),.Q11(Q11),.Q12(Q12),.Q13(Q13),.Q14(Q14),.Q15(Q15));
+    endmodule
+
+    module decoder (
+        output reg[15:0] regnum,
+        input LE,
+        input [3:0] RW
+        );
+        always @(*)
+            begin
+                if(LE) begin
+                    case(RW)
+                    4'b0000: regnum = 16'b0000000000000001;
+                    4'b0001: regnum = 16'b0000000000000010;
+                    4'b0010: regnum = 16'b0000000000000100; 
+                    4'b0011: regnum = 16'b0000000000001000; 
+                    4'b0100: regnum = 16'b0000000000010000;
+                    4'b0101: regnum = 16'b0000000000100000; 
+                    4'b0110: regnum = 16'b0000000001000000; 
+                    4'b0111: regnum = 16'b0000000010000000; 
+                    4'b1000: regnum = 16'b0000000100000000; 
+                    4'b1001: regnum = 16'b0000001000000000; 
+                    4'b1010: regnum = 16'b0000010000000000; 
+                    4'b1011: regnum = 16'b0000100000000000; 
+                    4'b1100: regnum = 16'b0001000000000000; 
+                    4'b1101: regnum = 16'b0010000000000000; 
+                    4'b1110: regnum = 16'b0100000000000000;     
+                    4'b1111: regnum = 16'b1000000000000000;
+                endcase
+            end else regnum = 16'b0000000000000000;
+        end
+    endmodule
+
+    module in16out1mux(
+        output reg [31:0] Y, 
+        input [3:0] R,
+        input [31:0] Q0,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10,Q11,Q12,Q13,Q14,Q15
+        );
+
+        always @(*) begin
+            case(R)
+            4'b0000: Y = Q0;
+            4'b0001: Y = Q1;
+            4'b0010: Y = Q2;
+            4'b0011: Y = Q3;
+            4'b0100: Y = Q4;
+            4'b0101: Y = Q5;
+            4'b0110: Y = Q6;
+            4'b0111: Y = Q7;
+            4'b1000: Y = Q8;
+            4'b1001: Y = Q9;
+            4'b1010: Y = Q10;
+            4'b1011: Y = Q11;
+            4'b1100: Y = Q12;
+            4'b1101: Y = Q13;
+            4'b1110: Y = Q14;
+            4'b1111: Y = Q15;
+            endcase
+        end
+    endmodule
+
+    module register(
+        input LE, clk,
+        input [31:0] PW,
+        output reg[31:0] Q
+        );
+
+      always @(posedge clk) begin
+            if(LE) begin 
+                Q <= PW;
+            end
+        end
+    endmodule
 
 /////////REGISTER FILE/////////
 
@@ -787,7 +808,7 @@ module ConditionHandler (
             4'b0010: cond_true = C;                 // CS: Unsigned higher or same
             4'b0011: cond_true = ~C;                // CC: Unsigned Lower
             4'b0100: cond_true = N;                 // MI: Minus
-            4'b0101: cond_true = ~N;                // PL: Positive or Zero
+            4'b0101: cond_true = N;                // PL: Positive or Zero
             4'b0110: cond_true = V;                 // VS: Overflow
             4'b0111: cond_true = ~V;                // VC: No Overflow
             4'b1000: cond_true = C & ~Z;            // HI: Unsigned Higher
