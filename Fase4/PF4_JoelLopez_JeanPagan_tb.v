@@ -304,7 +304,7 @@ Register_file RF (
 //EX
 alu ALU (
         .opcode(EX_opcode),
-        .OperandA(out_RN),
+        .OperandA(EX_Pa),
         .OperandB(N_Shift),
         .c0(PSR_flags[1]), 
   .result(result_ALU),
@@ -322,7 +322,7 @@ mux_32x1 alu_out_mux(
 );
 
 Shifter shift (
-        .Rm(out_RM),
+        .Rm(EX_Pb),
         .I(EX_I_11_0),
         .AM(EX_AM),
         .N_Shift(N_Shift)
