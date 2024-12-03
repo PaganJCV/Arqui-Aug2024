@@ -56,7 +56,6 @@ module PPU;
    //Register File
     reg [31:0] PW;
     wire [31:0] PA, PB, PD;
-    wire [31:0] monQ0, monQ1, monQ2, monQ3, monQ4, monQ5, monQ6, monQ7, monQ8, monQ9, monQ10, monQ11, monQ12, monQ13, monQ14, monQ15;
 
     //Control Unit
     reg [31:0] in_instruction;
@@ -226,23 +225,7 @@ module PPU;
         .RW(WB_Rd_or_14),
         .PA(PA),
         .PB(PB),
-        .PD(PD),
-        .monQ0(monQ0),
-        .monQ1(monQ1),
-        .monQ2(monQ2),
-        .monQ3(monQ3),
-        .monQ4(monQ4),
-        .monQ5(monQ5),
-        .monQ6(monQ6),
-        .monQ7(monQ7),
-        .monQ8(monQ8),
-        .monQ9(monQ9),
-        .monQ10(monQ10),
-        .monQ11(monQ11),
-        .monQ12(monQ12),
-        .monQ13(monQ13),
-        .monQ14(monQ14),
-        .monQ15(monQ15)
+        .PD(PD)
     );
 
 
@@ -487,9 +470,9 @@ mux_32x1 mem_mux(
         $fclose(fi);
     end
 
- initial begin
-   $monitor("clk: %d | pc=%0d | LE=%b | Keyword: %s | RA=%b | RB=%b | RD=%b | PW=%d | R1=%b | R2=%b | R3=%b, R5= %b | R6= %b", clk,
-         out_result_PC, WB_RF_enable, keyword, I_19_16_Rn, I_3_0_Rm, I_15_12_Rd, WB_RF_enable,monQ1, monQ2, monQ3, monQ5, monQ6);
+  initial begin
+   $monitor("Time: %d | pc=%0d | LE=%b | Keyword: %s | RA=%b | RB=%b | RD=%b | PW=%d | R1=%b | R2=%b | R3=%b, R5= %b | R6= %b", $time,
+         out_result_PC, WB_RF_enable, keyword, I_19_16_Rn, I_3_0_Rm, I_15_12_Rd, WB_RF_enable,RF.Q1, RF.Q2, RF.Q3, RF.Q5, RF.Q6);
  end
 
 

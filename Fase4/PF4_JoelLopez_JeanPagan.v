@@ -98,14 +98,11 @@ module Register_File(
         input [31:0] PC,PW,
         input [3:0] RD,RB,RA,RW,
         output [31:0] PD,PB,PA,
-        output reg [31:0] monQ0,monQ1,monQ2,monQ3,monQ4,monQ5,monQ6,monQ7,monQ8,monQ9,monQ10,monQ11,monQ12,monQ13,monQ14,monQ15
         );
 
         wire [15:0] regnum;
         wire [31:0] Q0,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10,Q11,Q12,Q13,Q14,Q15;
 
-        //declarando los modulos individuales las veces necesarias para hacer un three port register file y haciendo las 
-        //conneciones necesarias
         decoder decoder1(.regnum(regnum),.LE(LE),.RW(RW));
 
         register R0(.LE(regnum[0]), .clk(clk), .PW(PW), .Q(Q0));
