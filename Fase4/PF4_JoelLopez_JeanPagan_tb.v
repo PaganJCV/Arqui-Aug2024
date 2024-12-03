@@ -342,7 +342,9 @@ PSR psr(
     .PSR_flags(PSR_flags)
 );
 
-assign alu_flags_conc = {N, Z, C, V};
+always @(posedge clk)begin
+   alu_flags_conc <= {N, Z, C, V};
+end
 mux_4x1 flags_mux(
     .Y_4(out_flags_mux),
     .A_4(alu_flags_conc),
@@ -460,14 +462,7 @@ mux_32x1 mem_mux(
 
  initial begin
         $display(
-            "Time: %d, PC: %d, Address: %d, r1: %d, r2: %d, r3: %d, r5: %d", 
-            $time, 
-            in_pc, 
-            A, 
-            RF.Q1, 
-            RF.Q2, 
-            RF.Q3, 
-            RF.Q5
+            "Time: %d, PC: %d, Address: %d, r1: %d, r2: %d, r3: %d, r5: %d", $time, in_pc, A, RF.Q1, RF.Q2, RF.Q3, RF.Q5
         );
     end
 
