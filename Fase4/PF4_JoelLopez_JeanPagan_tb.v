@@ -433,7 +433,6 @@ mux_32x1 mem_mux(
     initial begin
         R = 1; // Reset en 1 al inicio
       in_pc = 0;  
-      LE = 1; // Enable de PC e IF/ID
         S = 0; // Multiplexor en 0
         #3 R = 0; // Reset cambia a 0 en tiempo 3
         #32 S = 1; // Multiplexor cambia a 1 en tiempo 32
@@ -459,16 +458,9 @@ mux_32x1 mem_mux(
     end
 
  initial begin
-        $display(
-            "Time: %d, PC: %d, Address: %d, r1: %d, r2: %d, r3: %d, r5: %d", 
-            $time, 
-            in_pc, 
-            A, 
-            RF.Q1, 
-            RF.Q2, 
-            RF.Q3, 
-            RF.Q5
-        );
+   $monitor("Time: %d, LE: %b, R: %d, PC_in: %d, PC_out: %d",
+             $time, FW_LE_SIGNAL, R, out_result_PC, result, );
+
     end
 
 
