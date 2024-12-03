@@ -551,7 +551,7 @@ module ID_EX(
           in_ID_RW_enable,
           in_ID_Enable_signal,
           in_BL_enable,
-    output reg EX_next_pc,
+    output reg [7:0] EX_next_pc,
     output reg [31:0] EX_Pa, EX_Pb, EX_Pd,
     output reg [11:0] EX_I_11_0,
     output reg [3:0] EX_Rd_or_14,
@@ -589,8 +589,8 @@ always @(posedge clk) begin
             EX_Pa <= Pa;
             EX_Pb <= Pb;
             EX_Pd <= Pd;
-            EX_Rd_or_14 <= Rd_or_14;
-            EX_I_11_0 <= I_11_0;
+            EX_Rd_or_14 <= in_Rd_or_14;
+            EX_I_11_0 <= in_I_11_0;
             EX_opcode <= in_ID_opcode;
             EX_AM <= in_ID_AM;
             EX_S_enable <= in_ID_S_enable;
@@ -776,11 +776,11 @@ module ConditionHandler (
     output reg Branch, BranchL 
 );
 
-    // Decode PSR flags
-    // wire N = flags[3];  // Negative
-    // wire Z = flags[2];  // Zero
-    // wire C = flags[1];  // Carry
-    // wire V = flags[0];  // Overflow
+    //Decode PSR flags
+    wire N = flags[3];  // Negative
+    wire Z = flags[2];  // Zero
+    wire C = flags[1];  // Carry
+    wire V = flags[0];  // Overflow
 
     reg cond_true;
     always @(*) begin
@@ -810,8 +810,8 @@ module ConditionHandler (
         Branch= 1'b0;
         BranchL = 1'b0;
 
-        if (B_instr && cond_true) Branch = 1'b1;
-        else if (BL_instr && cond_true) begin
+      if (in_B_instr && cond_true) Branch = 1'b1;
+      else if (in_BL_instr && cond_true) begin
             Branch = 1'b1;
             BranchL = 1'b1;
         end

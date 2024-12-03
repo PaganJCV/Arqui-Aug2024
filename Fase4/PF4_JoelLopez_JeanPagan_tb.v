@@ -313,7 +313,7 @@ alu ALU (
         .opcode(EX_opcode),
         .OperandA(out_RN),
         .OperandB(N_Shift),
-        .c0(PSR_flags), 
+        .c0(PSR_flags[1]), 
   .result(result_ALU),
         .Z(Z),
         .N(N),
@@ -323,7 +323,7 @@ alu ALU (
 
 mux_32x1 alu_out_mux(
     .Y_32(out_ALU_mux),
-    .A_32(EX_next_pc),
+  .A_32({24'b0, EX_next_pc}),
     .B_32(result_ALU),
     .S_32(EX_BL_enable)
 );
@@ -370,7 +370,7 @@ ConditionHandler CH (
                      .in_EX_Size_enable(EX_Size_enable),
                      .in_EX_RW_enable(EX_RW_enable),
                      .in_EX_Enable_signal(EX_Enable_signal),
-                     .in_mux_NextPC_Out(out_ALU_mux),
+               .in_mux_NextPC_Out(out_ALU_mux[7:0]),
                      .in_EX_Pd(EX_Pd),
                      .in_EX_Rd_or_14(EX_Rd_or_14), 
              .mux_NextPC_Out(mux_NextPC_Out),
@@ -393,10 +393,10 @@ ram256x8 RAM (
     );
 
 mux_32x1 mem_mux(
-    .Y_4(out_RAM_mux),
-    .A_4(DO),
-    .B_4(mux_NextPC_Out),
-    .S_4(MEM_load_instr)
+    .Y_32(out_RAM_mux),
+    .A_32(DO),
+    .B_32(mux_NextPC_Out),
+    .S_32(MEM_load_instr)
 );
 
 //
