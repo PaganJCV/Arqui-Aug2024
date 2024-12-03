@@ -97,7 +97,7 @@ module Register_File(
         input LE, clk,
         input [31:0] PC,PW,
         input [3:0] RD,RB,RA,RW,
-        output [31:0] PD,PB,PA,
+        output [31:0] PD,PB,PA
         );
 
         wire [15:0] regnum;
