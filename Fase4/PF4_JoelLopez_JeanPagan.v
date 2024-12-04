@@ -22,7 +22,7 @@ module PC(
     input [7:0] in_pc,
     output reg [7:0] out_pc
 );
-
+	
   always @(posedge clk) begin
     if(LE == 1 && R == 0) out_pc <= in_pc;
     else if (R == 1) out_pc <= 8'b00000000;
@@ -52,7 +52,7 @@ module ROM(
 endmodule
 
 module IF_ID(
-    input clk, R,
+    input clk, R, Branch,
     input [7:0] pc_plus_4,
   input [31:0] rom_instruction,
     input LE,
@@ -65,13 +65,14 @@ module IF_ID(
 
 // normal run
 always @(posedge clk)begin
-    if(R) Instruction <= 32'b00000000000000000000000000000000;
+    if(R || Branch) Instruction <= 32'b00000000000000000000000000000000;
     else if(LE)
     I_23_0 = rom_instruction[23:0];
     I_19_16_Rn = rom_instruction[19:16];
     I_3_0_Rm = rom_instruction[3:0];
     I_15_12_Rd = rom_instruction[15:12];
     I_31_28 = rom_instruction[31:28];
+  	I_11_0 = rom_instruction[11:0];
     next_pc = pc_plus_4;
     Instruction = rom_instruction;
 end
@@ -805,7 +806,7 @@ module ConditionHandler (
             4'b0010: cond_true = C;                 // CS: Unsigned higher or same
             4'b0011: cond_true = ~C;                // CC: Unsigned Lower
             4'b0100: cond_true = N;                 // MI: Minus
-            4'b0101: cond_true = N;                // PL: Positive or Zero
+            4'b0101: cond_true = ~N;                // PL: Positive or Zero
             4'b0110: cond_true = V;                 // VS: Overflow
             4'b0111: cond_true = ~V;                // VC: No Overflow
             4'b1000: cond_true = C & ~Z;            // HI: Unsigned Higher
@@ -843,10 +844,10 @@ module EX_MEM(
           in_EX_RW_enable,
           in_EX_Enable_signal,
 //    input ID_B_instr, ID_BL_instr,
-       input [7:0] in_mux_NextPC_Out,
+       input [31:0] in_mux_NextPC_Out,
        input [31:0] in_EX_Pd,
        input [3:0] in_EX_Rd_or_14,
-       output reg [7:0] mux_NextPC_Out,
+       output reg [31:0] mux_NextPC_Out,
        output reg [31:0] MEM_Pd,
        output reg [3:0] MEM_Rd_or_14,
        output reg MEM_load_instr,
@@ -888,7 +889,7 @@ module ram256x8 (
     input [31:0] DI
 );
    reg[7:0] Mem[0:255];
-   always@(A, RW)
+   always@(E, RW)
      case(Size)
             1'b0:
                 //Reading operation
@@ -945,9 +946,21 @@ module ForwardingUnit (
     output reg [1:0] FW_ID_RM_MUX_SIGNAL, FW_ID_RN_MUX_SIGNAL,
     output reg [3:0] EX_TO_ID_RD, MEM_TO_ID_RD, WB_TO_ID_RD       
 );
+  
+  // FOR LOAD INSTRUCTIONS
+    always @(*) begin
+        // Default values
+        FW_LE_SIGNAL = 1'b1;
+        FW_CU_MUX_SIGNAL = 1'b0;
+
+        if (EX_load_instr && ((ID_RN == EX_RD) || (ID_RM == EX_RD))) begin
+            FW_CU_MUX_SIGNAL = 1'b1; // Forwarding hazard detected
+            FW_LE_SIGNAL = 1'b0;     // Disable LE
+        end
+  else 
 
     // FOR RM
-    always @(*) begin
+    
         if (EX_RF_enable && (ID_RM == EX_RD)) begin
             EX_TO_ID_RD = EX_RD;
             FW_ID_RM_MUX_SIGNAL = 2'b01;  
@@ -960,10 +973,10 @@ module ForwardingUnit (
         end else begin
             FW_ID_RM_MUX_SIGNAL = 2'b00; // Default
         end
-    end
+    
 
     // FOR RN
-    always @(*) begin
+   
         if (EX_RF_enable && (ID_RN == EX_RD)) begin
             EX_TO_ID_RD = EX_RD;
             FW_ID_RN_MUX_SIGNAL = 2'b01;  
@@ -978,20 +991,4 @@ module ForwardingUnit (
         end
     end
 
-    // FOR LOAD INSTRUCTIONS
-    always @(*) begin
-        // Default values
-        FW_LE_SIGNAL = 1'b1;
-        FW_CU_MUX_SIGNAL = 1'b0;
-
-        if (EX_load_instr && ((ID_RN == EX_RD) || (ID_RM == EX_RD))) begin
-            FW_CU_MUX_SIGNAL = 1'b1; // Forwarding hazard detected
-            FW_LE_SIGNAL = 1'b0;     // Disable LE
-        end
-    end
-
-    // FOR MEMORY INSTRUCTIONS
-    always @(*) begin
-        FW_MEM_MUX_SIGNAL = MEM_load_instr ? 1'b1 : 1'b0; // Enable MEM forwarding
-    end
 endmodule

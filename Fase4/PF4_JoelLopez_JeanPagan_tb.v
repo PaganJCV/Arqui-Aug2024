@@ -147,12 +147,12 @@ module PPU;
     in_EX_Size_enable,
     in_EX_RW_enable,
     in_EX_Enable_signal;
-    reg [7:0] in_mux_NextPC_Out;
+    reg [31:0] in_mux_NextPC_Out;
     reg [11:0] in_EX_I_11_0;
     reg [31:0] in_EX_Pd;
     reg [3:0] IN_EX_Rd_or_14;
     wire MEM_load_instr, MEM_RF_enable, MEM_Size_enable, MEM_RW_enable, MEM_Enable_signal;
-    wire [7:0] mux_NextPC_Out;
+    wire [31:0] mux_NextPC_Out;
     wire [3:0] MEM_Rd_or_14;
     wire [31:0] MEM_Pd;
 
@@ -178,6 +178,7 @@ module PPU;
     wire [3:0] EX_TO_ID_RD, MEM_TO_ID_RD, WB_TO_ID_RD;
  
  //IF
+ 
   PC pc_tb(.clk(clk), .R(R), .LE(FW_LE_SIGNAL), .in_pc(out_result_PC), .out_pc(out_pc));
 
   PC_adder adder_tb(.num(out_pc), .result(result));
@@ -187,7 +188,7 @@ module PPU;
   ROM rom(.address(out_pc),.instruction(Instruction));
 //
 
-  IF_ID ifid(.clk(clk), .R(R), .pc_plus_4(result), .rom_instruction(Instruction), 
+  IF_ID ifid(.clk(clk), .R(R), .Branch(Branch), .pc_plus_4(result), .rom_instruction(Instruction), 
                 .LE(FW_LE_SIGNAL), 
                 .I_23_0(I_23_0), 
                 .next_pc(next_pc), 
@@ -314,7 +315,7 @@ module PPU;
            .EX_Size_enable(EX_Size_enable),
            .EX_RW_enable(EX_RW_enable),
            .EX_Enable_signal(EX_Enable_signal),
-           .EX_BL_enable(BranchL)
+           .EX_BL_enable(EX_BL_enable)
            );
 //EX
 alu ALU (
@@ -329,9 +330,11 @@ alu ALU (
         .V(V)
     );
 
+  reg [31:0] PC_combined;
+  always @(*) PC_combined <= {24'b0, EX_next_pc};
 mux_32x1 alu_out_mux(
     .Y_32(out_ALU_mux),
-  .A_32({24'b0, EX_next_pc}),
+  .A_32(PC_combined),
     .B_32(result_ALU),
     .S_32(EX_BL_enable)
 );
@@ -381,7 +384,7 @@ ConditionHandler CH (
                      .in_EX_Size_enable(EX_Size_enable),
                      .in_EX_RW_enable(EX_RW_enable),
                      .in_EX_Enable_signal(EX_Enable_signal),
-               .in_mux_NextPC_Out(out_ALU_mux[7:0]),
+               .in_mux_NextPC_Out(out_ALU_mux),
                      .in_EX_Pd(EX_Pd),
                      .in_EX_Rd_or_14(EX_Rd_or_14), 
              .mux_NextPC_Out(mux_NextPC_Out),
@@ -393,20 +396,24 @@ ConditionHandler CH (
              .MEM_RW_enable(MEM_RW_enable),
              .MEM_Enable_signal(MEM_Enable_signal));
 //
+reg A_8_bit;
+always @(*) A_8_bit <= mux_NextPC_Out [7:0];
 //MEM
 ram256x8 RAM (
         .DO(DO),
         .E(MEM_Enable_signal),
         .RW(MEM_RW_enable),
         .Size(MEM_Size_enable),
-        .A(mux_NextPC_Out),
+        .A(A_8_bit),
         .DI(MEM_Pd)
     );
 
+  reg [31:0] PC_for_MEM;
+  always@(*) PC_for_MEM <= {24'b0, mux_NextPC_Out};
 mux_32x1 mem_mux(
     .Y_32(out_RAM_mux),
     .A_32(DO),
-  .B_32({24'b0, mux_NextPC_Out}),
+  .B_32(PC_for_MEM),
     .S_32(MEM_load_instr)
 );
 
@@ -439,16 +446,13 @@ mux_32x1 mem_mux(
     // Control de Señales Iniciales
     initial begin
         clk = 0;
-      repeat(20) #2 clk = ~clk; 
+      repeat(25) #2 clk = ~clk; 
     end
 
     // Control de Señales Iniciales
     initial begin
         R = 1; // Reset en 1 al inicio
-      in_pc = 0;  
-        S = 0; // Multiplexor en 0
         #3 R = 0; // Reset cambia a 0 en tiempo 3
-        #32 S = 1; // Multiplexor cambia a 1 en tiempo 32
     end
 
    initial begin
@@ -471,8 +475,15 @@ mux_32x1 mem_mux(
     end
 
   initial begin
-   $monitor("Time: %d | pc=%0d | LE=%b | Keyword: %s | RA=%b | RB=%b | RD=%b | PW=%d | R1=%b | R2=%b | R3=%b, R5= %b | R6= %b", $time,
-         out_result_PC, WB_RF_enable, keyword, I_19_16_Rn, I_3_0_Rm, I_15_12_Rd, WB_RF_enable,RF.Q1, RF.Q2, RF.Q3, RF.Q5, RF.Q6);
+    //Entradas y salidas ID y EX
+    // $monitor("PC: %d | Keyword: %s \n\nIN_23_0: %b | IN_19_16: %b | IN_3_0: %b | IN_15_12: %b | IN_31_28: %b | IN_11_0: %b\n\nID_RN: %d | ID_RM: %d | ID_ PD: %d | ID_RD_14: %d | ID_11_0: %d | ID_OP: %d | ID_AM: %d | ID_ BranchL: %b | ID_NEXT_PC: %d\n\nEX_RN: %d | EX_RM: %d | EX_ PD: %d | EX_RD_14: %d | EX_11_0: %d | EX_OP: %d | EX_AM: %d | EX_NEXT_PC: %d\n\n----------------------------------------------------------------------------------------------------------------------------------------", 
+    // out_pc, keyword, I_23_0, I_19_16_Rn, I_3_0_Rm, I_15_12_Rd, I_31_28, I_11_0,
+    //                  out_RN, out_RM, PD, out_RD_mux, I_11_0, ID_opcode, ID_AM, BranchL, next_pc,
+    //                  EX_Pa, EX_Pb, EX_Pd, EX_I_11_0, EX_Rd_or_14, EX_opcode, EX_AM, EX_BL_enable);
+    $monitor("\nPC: %d | Keyword: %s \n44: %b %b %b %b\nAc: %b\nPW: %d\nIN_11_0: %d\nFU_RN: %b | RN: %d\nFU_RM: %b | RM: %d\nR1: %d | R2: %d | R3: %d | R5: %d | R6: %d\n\nALU:\nEntrada A: %d | Entrada B: %d | OP: %b | Cin: %b | resultado: %d | Z: %b | N: %b | C: %b | V: %b | alu flags: %b | PSR Flags: %b | CH mux: %b\nCondition code: %b | B_instr: %b | BL_instr: %b | Branch: %b | BranchL: %b | TA: %d | PC_TA: %d\n\nShifter:\nEntrada A: %d | Entrada B: %d | AM: %b | resultado: %d\n\nWB debugg:\nSalida mux ALU: %d | Salida mux ALU: %b | Entrada a MEM: %d | Salida mux MEM: %d | WB Value: %d\n--------------------------------------------------------------------------------------------------------------------------------------",
+             out_pc, keyword, rom.Mem[44], rom.Mem[45], rom.Mem[46], rom.Mem[47], instruction, out_WB_DO, I_11_0, FW_ID_RN_MUX_SIGNAL,out_RN, FW_ID_RM_MUX_SIGNAL, out_RM, RF.Q1, RF.Q2, RF.Q3, RF.Q5, RF.Q6, EX_Pa, N_Shift, EX_opcode, PSR_flags[1], result_ALU, Z, N, C ,V, alu_flags_conc, PSR_flags, out_flags_mux, I_31_28, B_instr, BL_instr, Branch, BranchL, Target_add, out_result_PC,
+              EX_Pb, EX_I_11_0,EX_AM, N_Shift,
+              out_ALU_mux, out_ALU_mux, mux_NextPC_Out, out_RAM_mux, out_WB_DO);
  end
 
 
