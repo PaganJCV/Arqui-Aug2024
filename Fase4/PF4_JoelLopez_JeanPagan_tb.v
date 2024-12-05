@@ -393,7 +393,7 @@ ConditionHandler CH (
              .MEM_RW_enable(MEM_RW_enable),
              .MEM_Enable_signal(MEM_Enable_signal));
 //
-reg A_8_bit;
+  reg [7:0] A_8_bit;
 always @(posedge clk) A_8_bit <= mux_NextPC_Out [7:0];
 //MEM
 ram256x8 RAM (
@@ -475,8 +475,8 @@ mux_32x1 mem_mux(
     // out_pc, keyword, I_23_0, I_19_16_Rn, I_3_0_Rm, I_15_12_Rd, I_31_28, I_11_0,
     //                  out_RN, out_RM, PD, out_RD_mux, I_11_0, ID_opcode, ID_AM, BranchL, next_pc,
     //                  EX_Pa, EX_Pb, EX_Pd, EX_I_11_0, EX_Rd_or_14, EX_opcode, EX_AM, EX_BL_enable);
-    $monitor("\nPC: %d | Keyword: %s \n44: %b %b %b %b\nAc: %b\nPW: %d | R%d\nIN_11_0: %d\nFU_RN: %b | RN: %d\nFU_RM: %b | RM: %d\nR1: %d | R2: %d | R3: %d | R5: %d | R6: %d\n\nALU:\nEntrada A: %d | Entrada B: %d | OP: %b | Cin: %b | resultado: %d | N: %b | Z: %b | C: %b | V: %b | alu flags: %b | PSR Flags: %b | CH mux: %b\nCondition code: %b | cond_true: %b | B_instr: %b | BL_instr: %b | Branch: %b | BranchL: %b | TA: %d | PC_TA: %d\n\nShifter:\nEntrada A: %d | Entrada B: %d | AM: %b | resultado: %d\n\nWB debugg:\nSalida mux ALU: %d | Salida mux ALU: %b | Entrada a MEM: %d | Salida mux MEM: %d | WB Value: %d\n--------------------------------------------------------------------------------------------------------------------------------------",
-             out_pc, keyword, rom.Mem[44], rom.Mem[45], rom.Mem[46], rom.Mem[47], instruction, out_WB_DO, WB_Rd_or_14, I_11_0, FW_ID_RN_MUX_SIGNAL,out_RN, FW_ID_RM_MUX_SIGNAL, out_RM, RF.Q1, RF.Q2, RF.Q3, RF.Q5, RF.Q6, EX_Pa, N_Shift, EX_opcode, PSR_flags[1], result_ALU, N, Z, C ,V, alu_flags_conc, PSR_flags, out_flags_mux, I_31_28, CH.cond_true, ID_B_instr, ID_BL_instr, Branch, BranchL, Target_add[7:0], out_result_PC,
+    $monitor("\nPC: %d | Keyword: %s \n44: %b %b %b %b\nAc: %b\nAM: %b%b\nPW: %d | R%d\nIN_11_0: %d\nFU_RN: %b | RN: %d\nFU_RM: %b | RM: %d\nR1: %d | R2: %d | R3: %d | R5: %d | R6: %d\n\nALU:\nEntrada A: %d | Entrada B: %d | OP: %b | Cin: %b | resultado: %d | N: %b | Z: %b | C: %b | V: %b | alu flags: %b | PSR Flags: %b | CH mux: %b\nCondition code: %b | cond_true: %b | B_instr: %b | BL_instr: %b | Branch: %b | BranchL: %b | TA: %d | PC_TA: %d\n\nShifter:\nEntrada A: %d | Entrada B: %d | AM: %b | resultado: %d\n\nWB debugg:\nSalida mux ALU: %d | Salida mux ALU: %b | Entrada a MEM: %d | Salida mux MEM: %d | WB Value: %d\n--------------------------------------------------------------------------------------------------------------------------------------",
+             out_pc, keyword, rom.Mem[44], rom.Mem[45], rom.Mem[46], rom.Mem[47], instruction, instruction[27:25], instruction[4], out_WB_DO, WB_Rd_or_14, I_11_0, FW_ID_RN_MUX_SIGNAL,out_RN, FW_ID_RM_MUX_SIGNAL, out_RM, RF.Q1, RF.Q2, RF.Q3, RF.Q5, RF.Q6, EX_Pa, N_Shift, EX_opcode, PSR_flags[1], result_ALU, N, Z, C ,V, alu_flags_conc, PSR_flags, out_flags_mux, I_31_28, CH.cond_true, ID_B_instr, ID_BL_instr, Branch, BranchL, Target_add[7:0], out_result_PC,
               EX_Pb, EX_I_11_0,EX_AM, N_Shift,
               out_ALU_mux, out_ALU_mux, mux_NextPC_Out, out_RAM_mux, out_WB_DO);
  end

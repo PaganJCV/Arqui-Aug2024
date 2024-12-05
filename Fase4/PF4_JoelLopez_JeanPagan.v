@@ -1,3 +1,4 @@
+
 module mux_2x1 (output Y, input S, A, B);
 assign Y = (S)? A:B;
 endmodule
@@ -92,7 +93,7 @@ module TA (
 reg [31:0] extended;
 reg [31:0] I_23;
 always @(*) begin
-    I_23 = {24'b0, in_I_23_0};
+  I_23 = {8'b0, in_I_23_0};
   extended = $signed(I_23) << 2;
     Target_add = in_next_pc + extended;
 end
@@ -481,7 +482,7 @@ end
         //data processing Immediate shift
         4'b0000: begin
           if(keyword == "NOP") AM = 2'b00;
-          else AM = 2'b11;
+          else AM <= 2'b11;
         end
         //data processing register shift
         4'b0001: AM = 2'b11;
@@ -835,8 +836,8 @@ module ConditionHandler (
 
       if (in_B_instr && cond_true) Branch = 1'b1;
       else if (in_BL_instr && cond_true) begin
-            Branch <= 1'b1;
-            BranchL <= 1'b1;
+            Branch = 1'b1;
+            BranchL = 1'b1;
         end
     end
 
