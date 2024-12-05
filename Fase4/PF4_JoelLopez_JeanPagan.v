@@ -53,35 +53,40 @@ module ROM(
 endmodule
 
 module IF_ID(
-    input clk, R, Branch,
+    input clk, R, R_B,
+    input [31:0] next_pc,
   input [31:0] rom_instruction,
     input LE,
     output reg [23:0] I_23_0,
     output reg [3:0] I_19_16_Rn, I_3_0_Rm, I_15_12_Rd, I_31_28,
     output reg [11:0] I_11_0,
+    output reg [31:0] ID_next_pc,
     output reg [31:0] Instruction
 );
 
 // normal run
-always @(posedge clk)begin
-  if(R || Branch) begin
-    I_23_0 <= 0;
-    I_19_16_Rn <= 0;
-    I_3_0_Rm <= 0;
-    I_15_12_Rd <= 0;
-    I_31_28 <= 0;
-  	I_11_0 <= 0;
-    Instruction <= 32'b00000000000000000000000000000000;
+  always @(posedge clk)begin
+  if(R || R_B) begin
+    I_23_0 <= 32'b0;
+    I_19_16_Rn <= 4'b0;
+    I_3_0_Rm <= 4'b0;
+    I_15_12_Rd <= 4'b0;
+    I_31_28 <= 4'b0;
+  	I_11_0 <= 12'b0;
+    ID_next_pc <= 32'b0;
+    Instruction <= 32'b0;
   end
-    else if(LE)
+    else if(LE) begin
     I_23_0 <= rom_instruction[23:0];
     I_19_16_Rn <= rom_instruction[19:16];
     I_3_0_Rm <= rom_instruction[3:0];
     I_15_12_Rd <= rom_instruction[15:12];
     I_31_28 <= rom_instruction[31:28];
   	I_11_0 <= rom_instruction[11:0];
+    ID_next_pc <= next_pc;
     Instruction <= rom_instruction;
 end
+  end
 
 endmodule
 

@@ -188,7 +188,7 @@ module PPU;
   ROM rom(.address(out_pc[7:0]),.instruction(Instruction));
 //
 
-  IF_ID ifid(.clk(clk), .R(R), .Branch(Branch), .rom_instruction(Instruction), 
+  IF_ID ifid(.clk(clk), .R(R), .R_B(Branch), .next_pc(result), .rom_instruction(Instruction), 
                 .LE(FW_LE_SIGNAL), 
                 .I_23_0(I_23_0), 
                 .I_19_16_Rn(I_19_16_Rn), 
@@ -196,6 +196,7 @@ module PPU;
                 .I_15_12_Rd(I_15_12_Rd), 
                 .I_31_28(I_31_28), 
                 .I_11_0(I_11_0), 
+                .ID_next_pc(next_pc),
                 .Instruction(instruction));
 
 // 
@@ -252,7 +253,7 @@ module PPU;
  
 
  //TA
- TA ta(.in_I_23_0(I_23_0), .in_next_pc(result), .Target_add(Target_add));
+ TA ta(.in_I_23_0(I_23_0), .in_next_pc(next_pc), .Target_add(Target_add));
 
  //MUX RD
  mux_4x1 RD_mux(.Y_4(out_RD_mux), .A_4(4'b1110), .B_4(I_15_12_Rd), .S_4(BranchL));
@@ -441,7 +442,7 @@ mux_32x1 mem_mux(
     // Control de Señales Iniciales
     initial begin
         clk = 0;
-      repeat(25) #2 clk = ~clk; 
+      repeat(30) #2 clk = ~clk; 
     end
 
     // Control de Señales Iniciales
@@ -475,10 +476,12 @@ mux_32x1 mem_mux(
     // out_pc, keyword, I_23_0, I_19_16_Rn, I_3_0_Rm, I_15_12_Rd, I_31_28, I_11_0,
     //                  out_RN, out_RM, PD, out_RD_mux, I_11_0, ID_opcode, ID_AM, BranchL, next_pc,
     //                  EX_Pa, EX_Pb, EX_Pd, EX_I_11_0, EX_Rd_or_14, EX_opcode, EX_AM, EX_BL_enable);
-    $monitor("\nPC: %d | Keyword: %s \n44: %b %b %b %b\nAc: %b\nAM: %b%b\nPW: %d | R%d\nIN_11_0: %d\nFU_RN: %b | RN: %d\nFU_RM: %b | RM: %d\nR1: %d | R2: %d | R3: %d | R5: %d | R6: %d\n\nALU:\nEntrada A: %d | Entrada B: %d | OP: %b | Cin: %b | resultado: %d | N: %b | Z: %b | C: %b | V: %b | alu flags: %b | PSR Flags: %b | CH mux: %b\nCondition code: %b | cond_true: %b | B_instr: %b | BL_instr: %b | Branch: %b | BranchL: %b | TA: %d | PC_TA: %d | extenden: %b | extended: %d\n\nShifter:\nEntrada A: %d | Entrada B: %d | AM: %b | resultado: %d\n\nWB debugg:\nSalida mux ALU: %d | Salida mux ALU: %b | Entrada a MEM: %d | Salida mux MEM: %d | WB Value: %d\n--------------------------------------------------------------------------------------------------------------------------------------",
-             out_pc, keyword, rom.Mem[44], rom.Mem[45], rom.Mem[46], rom.Mem[47], instruction, instruction[27:25], instruction[4], out_WB_DO, WB_Rd_or_14, I_11_0, FW_ID_RN_MUX_SIGNAL,out_RN, FW_ID_RM_MUX_SIGNAL, out_RM, RF.Q1, RF.Q2, RF.Q3, RF.Q5, RF.Q6, EX_Pa, N_Shift, EX_opcode, PSR_flags[1], result_ALU, N, Z, C ,V, alu_flags_conc, PSR_flags, out_flags_mux, I_31_28, CH.cond_true, ID_B_instr, ID_BL_instr, Branch, BranchL, Target_add[7:0], out_result_PC, ta.I_23, ta.I_23,
-              EX_Pb, EX_I_11_0,EX_AM, N_Shift,
-              out_ALU_mux, out_ALU_mux, mux_NextPC_Out, out_RAM_mux, out_WB_DO);
+    // $monitor("\nPC: %d | Keyword: %s \n44: %b %b %b %b\nAc: %b\nAM: %b%b\nPW: %d | R%d\nIN_11_0: %d\nFU_RN: %b | RN: %d\nFU_RM: %b | RM: %d\nR1: %d | R2: %d | R3: %d | R5: %d | R6: %d\n\nALU:\nEntrada A: %d | Entrada B: %d | OP: %b | Cin: %b | resultado: %d | N: %b | Z: %b | C: %b | V: %b | alu flags: %b | PSR Flags: %b | CH mux: %b\nCondition code: %b | cond_true: %b | B_instr: %b | BL_instr: %b | Branch: %b | BranchL: %b | TA: %d | PC_TA: %d | extenden: %b | extended: %d\n\nShifter:\nEntrada A: %d | Entrada B: %d | AM: %b | resultado: %d\n\nWB debugg:\nSalida mux ALU: %d | Salida mux ALU: %b | Entrada a MEM: %d | Salida mux MEM: %d | WB Value: %d\n--------------------------------------------------------------------------------------------------------------------------------------",
+    //          out_pc, keyword, rom.Mem[44], rom.Mem[45], rom.Mem[46], rom.Mem[47], instruction, instruction[27:25], instruction[4], out_WB_DO, WB_Rd_or_14, I_11_0, FW_ID_RN_MUX_SIGNAL,out_RN, FW_ID_RM_MUX_SIGNAL, out_RM, RF.Q1, RF.Q2, RF.Q3, RF.Q5, RF.Q6, EX_Pa, N_Shift, EX_opcode, PSR_flags[1], result_ALU, N, Z, C ,V, alu_flags_conc, PSR_flags, out_flags_mux, I_31_28, CH.cond_true, ID_B_instr, ID_BL_instr, Branch, BranchL, Target_add[7:0], out_result_PC, ta.I_23, ta.I_23,
+    //           EX_Pb, EX_I_11_0,EX_AM, N_Shift,
+    //           out_ALU_mux, out_ALU_mux, mux_NextPC_Out, out_RAM_mux, out_WB_DO);
+    $monitor("time: %d | Keyword: %s | PC: %d | PC+4: %d | TA: %d | Senal: %b | Out del mux: %d\n\nR_B: %b | Next_pc: %d | Instruction_IF: %b | Instruction ID: %b | I_23_0: %d\n---------------------------------------------------------------------------------", 
+    $time, keyword, out_pc, result, Target_add, Branch, out_result_PC, ifid.R_B, next_pc, Instruction, instruction, I_23_0);
  end
 
 
