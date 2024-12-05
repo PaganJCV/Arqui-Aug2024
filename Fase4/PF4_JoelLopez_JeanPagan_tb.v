@@ -471,6 +471,17 @@ mux_32x1 mem_mux(
     end
 
   initial begin
+    $monitor("Time: %d | PC: %d | Keyword: %s | Adress Received: %d  |  RF1: %d  |  RF2 : %d  |  RF3: %d  |  RF4 : %d  |  RF5: %d  |  RF6 : %d\n",
+    $time,
+    out_pc,
+    keyword,
+    A_8_bit,
+    RF.Q1,
+    RF.Q2,
+    RF.Q3,
+    RF.Q4,
+    RF.Q5,
+    RF.Q6);
     //Entradas y salidas ID y EX
     // $monitor("PC: %d | Keyword: %s \n\nIN_23_0: %b | IN_19_16: %b | IN_3_0: %b | IN_15_12: %b | IN_31_28: %b | IN_11_0: %b\n\nID_RN: %d | ID_RM: %d | ID_ PD: %d | ID_RD_14: %d | ID_11_0: %d | ID_OP: %d | ID_AM: %d | ID_ BranchL: %b | ID_NEXT_PC: %d\n\nEX_RN: %d | EX_RM: %d | EX_ PD: %d | EX_RD_14: %d | EX_11_0: %d | EX_OP: %d | EX_AM: %d | EX_NEXT_PC: %d\n\n----------------------------------------------------------------------------------------------------------------------------------------", 
     // out_pc, keyword, I_23_0, I_19_16_Rn, I_3_0_Rm, I_15_12_Rd, I_31_28, I_11_0,
