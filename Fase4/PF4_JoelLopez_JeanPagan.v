@@ -53,11 +53,9 @@ endmodule
 
 module IF_ID(
     input clk, R, Branch,
-    input [31:0] pc_plus_4,
   input [31:0] rom_instruction,
     input LE,
     output reg [23:0] I_23_0,
-    output reg [31:0] next_pc,
     output reg [3:0] I_19_16_Rn, I_3_0_Rm, I_15_12_Rd, I_31_28,
     output reg [11:0] I_11_0,
     output reg [31:0] Instruction
@@ -65,7 +63,15 @@ module IF_ID(
 
 // normal run
 always @(posedge clk)begin
-    if(R || Branch) Instruction <= 32'b00000000000000000000000000000000;
+  if(R || Branch) begin
+    I_23_0 <= 0;
+    I_19_16_Rn <= 0;
+    I_3_0_Rm <= 0;
+    I_15_12_Rd <= 0;
+    I_31_28 <= 0;
+  	I_11_0 <= 0;
+    Instruction <= 32'b00000000000000000000000000000000;
+  end
     else if(LE)
     I_23_0 <= rom_instruction[23:0];
     I_19_16_Rn <= rom_instruction[19:16];
@@ -73,7 +79,6 @@ always @(posedge clk)begin
     I_15_12_Rd <= rom_instruction[15:12];
     I_31_28 <= rom_instruction[31:28];
   	I_11_0 <= rom_instruction[11:0];
-    next_pc <= pc_plus_4;
     Instruction <= rom_instruction;
 end
 
@@ -85,8 +90,10 @@ module TA (
     output reg [31:0] Target_add
 );
 reg [31:0] extended;
+reg [31:0] I_23;
 always @(*) begin
-    extended = $signed(in_I_23_0) << 2;
+    I_23 = {24'b0, in_I_23_0};
+  extended = $signed(I_23) << 2;
     Target_add = in_next_pc + extended;
 end
 
@@ -389,71 +396,71 @@ always @(*) begin
     // end
     4'b0100: begin
         if(keyword[7:0] == 8'b01010011) begin 
-            keyword = {keyword[8*6-1:0] >> 8};
-            keyword = {keyword, "MIS"};
+            keyword <= {keyword[8*6-1:0] >> 8};
+            keyword <= {keyword, "MIS"};
         end
         else keyword = {keyword, "MI"};
     end
     4'b0101: begin
         if(keyword[7:0] == 8'b01010011) begin 
-            keyword = {keyword[8*6-1:0] >> 8};
-            keyword = {keyword, "PLS"};
+            keyword <= {keyword[8*6-1:0] >> 8};
+            keyword <= {keyword, "PLS"};
         end
         else keyword = {keyword, "PL"};
     end
     4'b0110: begin
         if(keyword[7:0] == 8'b01010011) begin 
-            keyword = {keyword[8*6-1:0] >> 8};
-            keyword = {keyword, "VSS"};
+            keyword <= {keyword[8*6-1:0] >> 8};
+            keyword <= {keyword, "VSS"};
         end
         else keyword = {keyword, "VS"};
     end
     4'b0111: begin
         if(keyword[7:0] == 8'b01010011) begin 
-            keyword = {keyword[8*6-1:0] >> 8};
-            keyword = {keyword, "VCS"};
+            keyword <= {keyword[8*6-1:0] >> 8};
+            keyword <= {keyword, "VCS"};
         end
         else keyword = {keyword, "VC"};
     end
     4'b1000: begin
         if(keyword[7:0] == 8'b01010011) begin 
-            keyword = {keyword[8*6-1:0] >> 8};
-            keyword = {keyword, "HIS"};
+            keyword <= {keyword[8*6-1:0] >> 8};
+            keyword <= {keyword, "HIS"};
         end
         else keyword = {keyword, "HI"};
     end
     4'b1001: begin
         if(keyword[7:0] == 8'b01010011) begin 
-            keyword = {keyword[8*6-1:0] >> 8};
-            keyword = {keyword, "LSS"};
+            keyword <= {keyword[8*6-1:0] >> 8};
+            keyword <= {keyword, "LSS"};
         end
         else keyword = {keyword, "LS"};
     end
     4'b1010: begin
         if(keyword[7:0] == 8'b01010011) begin 
-            keyword = {keyword[8*6-1:0] >> 8};
-            keyword = {keyword, "GES"};
+            keyword <= {keyword[8*6-1:0] >> 8};
+            keyword <= {keyword, "GES"};
         end
         else keyword = {keyword, "GE"};
     end
     4'b1011: begin
         if(keyword[7:0] == 8'b01010011) begin 
-            keyword = {keyword[8*6-1:0] >> 8};
-            keyword = {keyword, "LTS"};
+            keyword <= {keyword[8*6-1:0] >> 8};
+            keyword <= {keyword, "LTS"};
         end
         else keyword = {keyword, "LT"};
     end
     4'b1100: begin
         if(keyword[7:0] == 8'b01010011) begin 
-            keyword = {keyword[8*6-1:0] >> 8};
-            keyword = {keyword, "GTS"};
+            keyword <= {keyword[8*6-1:0] >> 8};
+            keyword <= {keyword, "GTS"};
         end
         else keyword = {keyword, "GT"};
     end
     4'b1101: begin
         if(keyword[7:0] == 8'b01010011) begin 
-            keyword = {keyword[8*6-1:0] >> 8};
-            keyword = {keyword, "LES"};
+            keyword <= {keyword[8*6-1:0] >> 8};
+            keyword <= {keyword, "LES"};
         end
         else keyword = {keyword, "LE"};
     end
