@@ -25,6 +25,7 @@ module PPU;
     reg [31:0] in_Px;
     wire [31:0] out_RN;
     wire [31:0] out_RM;
+    wire [31:0] out_RD;
 
 
     reg clk, R, LE;
@@ -250,6 +251,16 @@ module PPU;
     .Px(out_RM)
 );
 
+ //RM
+  RF_big_mux PD_mux(
+    .in_PX(PD), 
+    .EX_TO_ID_RD(out_ALU_mux), 
+    .MEM_TO_ID_RD(out_RAM_mux), 
+    .WB_TO_ID_RD(out_WB_DO), 
+    .FW_ID_RX_MUX_SIGNAL(FW_ID_RM_MUX_SIGNAL), 
+    .Px(out_RD)
+);
+
  
 
  //TA
@@ -296,7 +307,7 @@ module PPU;
 //
 //                  
 
-  ID_EX idex(.clk(clk), .R(R), .in_next_pc(next_pc), .Pa(out_RN), .Pb(out_RM), .Pd(PD), .in_Rd_or_14(out_RD_mux), .in_I_11_0(I_11_0),
+  ID_EX idex(.clk(clk), .R(R), .in_next_pc(next_pc), .Pa(out_RN), .Pb(out_RM), .Pd(out_RD), .in_Rd_or_14(out_RD_mux), .in_I_11_0(I_11_0),
                     .in_ID_opcode(ID_opcode),
                     .in_ID_AM(ID_AM),
                     .in_ID_S_enable(ID_S_enable),
@@ -426,7 +437,7 @@ mux_32x1 mem_mux(
 
   ForwardingUnit UNIDAD (
         .EX_RD(EX_Rd_or_14), .MEM_RD(MEM_Rd_or_14), .WB_RD(WB_Rd_or_14),
-        .ID_RM(I_3_0_Rm), .ID_RN(I_19_16_Rn),
+        .ID_RM(I_3_0_Rm), .ID_RN(I_19_16_Rn), .ID_RD(I_15_12_Rd),
         .EX_RF_enable(EX_RF_enable), .MEM_RF_enable(MEM_RF_enable),
         .WB_RF_enable(WB_RF_enable), .EX_load_instr(EX_load_instr),
         .MEM_load_instr(MEM_load_instr),

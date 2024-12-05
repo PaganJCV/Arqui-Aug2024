@@ -951,11 +951,11 @@ endmodule
 
 module ForwardingUnit (
     input [3:0] EX_RD, MEM_RD, WB_RD,
-    ID_RM, ID_RN,
+    ID_RM, ID_RN, ID_RD,
     input EX_RF_enable, MEM_RF_enable, WB_RF_enable,
     EX_load_instr, MEM_load_instr,
     output reg FW_LE_SIGNAL, FW_CU_MUX_SIGNAL, FW_MEM_MUX_SIGNAL,
-    output reg [1:0] FW_ID_RM_MUX_SIGNAL, FW_ID_RN_MUX_SIGNAL,
+    output reg [1:0] FW_ID_RM_MUX_SIGNAL, FW_ID_RN_MUX_SIGNAL, FW_ID_RD_MUX_SIGNAL,
     output reg [3:0] EX_TO_ID_RD, MEM_TO_ID_RD, WB_TO_ID_RD       
 );
   
@@ -1001,6 +1001,23 @@ module ForwardingUnit (
         end else begin
             FW_ID_RN_MUX_SIGNAL = 2'b00; // Default
         end
+
+    // FOR RD
+
+        if (EX_RF_enable && (ID_RD == EX_RD)) begin
+            EX_TO_ID_RD = EX_RD;
+            FW_ID_RD_MUX_SIGNAL = 2'b01;  
+        end else if (MEM_RF_enable && (ID_RD == MEM_RD)) begin 
+            MEM_TO_ID_RD = MEM_RD;
+            FW_ID_RD_MUX_SIGNAL = 2'b10;
+        end else if (WB_RF_enable && (ID_RD == WB_RD)) begin 
+            WB_TO_ID_RD = WB_RD;
+            FW_ID_RD_MUX_SIGNAL = 2'b11;
+        end else begin
+            FW_ID_RD_MUX_SIGNAL = 2'b00; // Default
+        end
     end
+
+        
 
 endmodule
