@@ -442,7 +442,7 @@ mux_32x1 mem_mux(
     // Control de Señales Iniciales
     initial begin
         clk = 0;
-      repeat(30) #2 clk = ~clk; 
+      repeat(50) #2 clk = ~clk; 
     end
 
     // Control de Señales Iniciales
@@ -480,8 +480,33 @@ mux_32x1 mem_mux(
     //          out_pc, keyword, rom.Mem[44], rom.Mem[45], rom.Mem[46], rom.Mem[47], instruction, instruction[27:25], instruction[4], out_WB_DO, WB_Rd_or_14, I_11_0, FW_ID_RN_MUX_SIGNAL,out_RN, FW_ID_RM_MUX_SIGNAL, out_RM, RF.Q1, RF.Q2, RF.Q3, RF.Q5, RF.Q6, EX_Pa, N_Shift, EX_opcode, PSR_flags[1], result_ALU, N, Z, C ,V, alu_flags_conc, PSR_flags, out_flags_mux, I_31_28, CH.cond_true, ID_B_instr, ID_BL_instr, Branch, BranchL, Target_add[7:0], out_result_PC, ta.I_23, ta.I_23,
     //           EX_Pb, EX_I_11_0,EX_AM, N_Shift,
     //           out_ALU_mux, out_ALU_mux, mux_NextPC_Out, out_RAM_mux, out_WB_DO);
-    $monitor("time: %d | Keyword: %s | PC: %d | PC+4: %d | TA: %d | Senal: %b | Out del mux: %d\n\nR_B: %b | Next_pc: %d | Instruction_IF: %b | Instruction ID: %b | I_23_0: %d\n---------------------------------------------------------------------------------", 
-    $time, keyword, out_pc, result, Target_add, Branch, out_result_PC, ifid.R_B, next_pc, Instruction, instruction, I_23_0);
+    // $monitor("time: %d | Keyword: %s | PC: %d | PC+4: %d | TA: %d | Senal: %b | Out del mux: %d\n\nR_B: %b | Next_pc: %d | Instruction_IF: %b | Instruction ID: %b | I_23_0: %d\n---------------------------------------------------------------------------------", 
+    // $time, keyword, out_pc, result, Target_add, Branch, out_result_PC, ifid.R_B, next_pc, Instruction, instruction, I_23_0);
+    // $monitor("PC = %d | Instr = %s | ID_opcode: %b |  ID_AM = %b | ID_S_enable = %b | ID_load_instr= %b | ID_RF_enable = %b | ID_Size_enable = %b | ID_RW_enable = %b | ID_Enable_signal = %b | ID_BL_instr = %b | ID_B_instr = %b \n\nEX:\nEX_opcode = %b | EX_AM = %b | EX_S_enable = %b | EX_RF_enable = %b | EX_Size_enable = %b | EX_RW_enable = %b | EX_Enable_signal = %b \n\nMEM:\nMEM_RF_enable = %b | MEM_Size_enable = %b | MEM_RW_enable = %b | MEM_Enable_signal = %b\n\nWB:\nWB_RF_enable: %b\n\n--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------",
+    //          out_pc,
+    //          keyword,
+    //          ID_opcode,
+    //          ID_AM,
+    //          ID_S_enable,
+    //          ID_load_instr,
+    //          ID_RF_enable,
+    //          ID_Size_enable,
+    //          ID_RW_enable,
+    //          ID_Enable_signal,
+    //          ID_BL_instr,
+    //          ID_B_instr,
+    //       	 EX_opcode,
+    //          EX_AM,
+    //          EX_S_enable,
+    //          EX_RF_enable,
+    //          EX_Size_enable,
+    //          EX_RW_enable,
+    //          EX_Enable_signal,
+    //       	 MEM_RF_enable,
+    //          MEM_Size_enable,
+    //          MEM_RW_enable,
+    //          MEM_Enable_signal,
+    //       	 WB_RF_enable);
  end
 
 
