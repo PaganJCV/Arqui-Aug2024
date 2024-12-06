@@ -225,7 +225,10 @@ module RF_big_mux(
 
 always @(*) begin
     case(FW_ID_RX_MUX_SIGNAL)
-        2'd00: Px <= in_PX;
+        2'b00: begin 
+            if(in_PX === 'bx) Px <= 32'b0;
+            else Px <= in_PX;
+        end
         2'b01: Px <= EX_TO_ID_RD;
         2'b10: Px <= MEM_TO_ID_RD;
         2'b11: Px <= WB_TO_ID_RD;
@@ -252,7 +255,7 @@ module Control_Unit(
 );
 
 always @(*) begin
-  opcode = 4'b1110;
+    opcode = 4'b1110;
     AM = 2'b00;
     S_enable = 1'b0;
     load_instr = 1'b0;
