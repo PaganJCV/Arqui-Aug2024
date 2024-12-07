@@ -453,7 +453,7 @@ mux_32x1 mem_mux(
     // Control de Señales Iniciales
     initial begin
         clk = 0;
-      repeat(50) #2 clk = ~clk; 
+      repeat(80) #2 clk = ~clk; 
     end
 
     // Control de Señales Iniciales
@@ -461,6 +461,7 @@ mux_32x1 mem_mux(
         R = 1; // Reset en 1 al inicio
         #3 R = 0; // Reset cambia a 0 en tiempo 3
     end
+    reg [7:0] RAM_Content;
 
    initial begin
         fi = $fopen("input_file.txt", "r");
@@ -475,31 +476,29 @@ mux_32x1 mem_mux(
             code = $fscanf(fi, "%b", dataIN);
             rom.Mem[address] = dataIN;
             RAM.Mem[A] = dataIN;
-            address = address + 1;
+            
+           address = address + 1;
           A = A + 1;
+
         end
         $fclose(fi);
     end
-
-    reg [31:0] RAM_Content;
-always @* begin
-    RAM_Content = {RAM.Mem[A_8_bit], RAM.Mem[A_8_bit + 1], RAM.Mem[A_8_bit + 2], RAM.Mem[A_8_bit + 3]};
-end
+ 
 
   initial begin
 
-    $monitor("\nkeyword: %s | PC: %d | PC+4: %d | Branch: %b | TA: %d | Salida Mux: %d", keyword,out_pc[7:0],result[7:0],Branch,Target_add[7:0],out_result_PC[7:0]);
-    // $monitor("Time: %d | PC: %d | Keyword: %s | Address Received: %d  |  R1: %d  |  R2 : %d  |  R3: %d  |  R5: %d  |  R6 : %d  |  RAM Content: %d  \n",
-    // $time,
-    // out_pc[7:0],
-    // keyword,
-    // A_8_bit,
-    // RF.Q1,
-    // RF.Q2,
-    // RF.Q3,
-    // RF.Q5,
-    // RF.Q6,
-    // RAM_Content);
+    // $monitor("\nkeyword: %s | PC: %d | PC+4: %d | Branch: %b | TA: %d | Salida Mux: %d ", keyword,out_pc[7:0],result[7:0],Branch,Target_add[7:0],out_result_PC[7:0]);
+    $monitor("Time: %d | PC: %d | Keyword: %s | Address Received: %d  |  R1: %d  |  R2 : %d  |  R3: %d  |  R5: %d  |  R6 : %d  |  RAM Content: %b  \n",
+    $time,
+    out_pc[7:0],
+    keyword,
+    A_8_bit,
+    RF.Q1,
+    RF.Q2,
+    RF.Q3,
+    RF.Q5,
+    RF.Q6,
+    RAM_Content);
     
     //Entradas y salidas ID y EX
     // $monitor("PC: %d | Keyword: %s \n\nIN_23_0: %b | IN_19_16: %b | IN_3_0: %b | IN_15_12: %b | IN_31_28: %b | IN_11_0: %b\n\nID_RN: %d | ID_RM: %d | ID_ PD: %d | ID_RD_14: %d | ID_11_0: %d | ID_OP: %d | ID_AM: %d | ID_ BranchL: %b | ID_NEXT_PC: %d\n\nEX_RN: %d | EX_RM: %d | EX_ PD: %d | EX_RD_14: %d | EX_11_0: %d | EX_OP: %d | EX_AM: %d | EX_NEXT_PC: %d\n\n----------------------------------------------------------------------------------------------------------------------------------------", 
