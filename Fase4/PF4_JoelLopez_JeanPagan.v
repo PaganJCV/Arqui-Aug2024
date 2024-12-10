@@ -1009,7 +1009,7 @@ module ForwardingUnit (
 
 
     // FOR RD
-
+	
         if (EX_RF_enable && (ID_RD == EX_RD)) begin
             EX_TO_ID_RD = EX_RD;
             FW_ID_RD_MUX_SIGNAL = 2'b01;  
