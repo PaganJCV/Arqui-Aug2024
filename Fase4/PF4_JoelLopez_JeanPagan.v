@@ -343,6 +343,16 @@ always @(*) begin
             if(in_instruction[20]) keyword = "MVNS";
             else keyword = "MVN";
         end
+        4'b1010: begin // Adding CMP
+            opcode = 4'b0010; // Comparison (A - B)
+            RF_enable = 1'b0; // Disable register write
+            keyword = "CMP";
+        end
+        4'b1011: begin // Adding CMP
+            opcode = 4'b0000; // Comparison (A - B)
+            RF_enable = 1'b0; // Disable register write
+            keyword = "CMN";
+        end
     default: opcode = 4'b1001; //A
 endcase
 //Data processing in_instruction and bit 20 = 0, S_enable
@@ -481,7 +491,7 @@ always @(*) begin
     //    else keyword = {keyword, "AL"};
     //end
     endcase 
-  if(keyword[7:0] == 8'b01010011) S_enable = 1;
+  if((keyword[7:0] == 8'b01010011) || (keyword == "CMP") || (keyword == "CMN")) S_enable = 1;
   else S_enable =0;
 end
   

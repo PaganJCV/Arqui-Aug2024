@@ -459,7 +459,7 @@ mux_32x1 mem_mux(
     end
 
     // Control de Señales Iniciales
-    reg [3:0] i = 4'b0;
+    reg [6:0] i = 7'b0;
 
     initial begin
         R = 1; // Reset en 1 al inicio
@@ -469,7 +469,7 @@ mux_32x1 mem_mux(
      A = 8'b0;
      
      $display("Ram Content: ");
-       while(i != 12)begin 
+       while(i != 47)begin 
      i = i + 1;
      $display("%b %b %b %b", RAM.Mem[A], RAM.Mem[A+1], RAM.Mem[A+2],RAM.Mem[A+3]);
      A = A + 4;
