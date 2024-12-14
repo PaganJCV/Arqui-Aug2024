@@ -465,13 +465,13 @@ mux_32x1 mem_mux(
         R = 1; // Reset en 1 al inicio
         #3 R = 0; // Reset cambia a 0 en tiempo 3
 
-     #240 begin
+     #280 begin
      A = 8'b0;
      
      $display("Ram Content: ");
-       while(i != 47)begin 
+       while(i != 58)begin 
      i = i + 1;
-     $display("%b %b %b %b", RAM.Mem[A], RAM.Mem[A+1], RAM.Mem[A+2],RAM.Mem[A+3]);
+     $display("%d | %b %b %b %b",A, RAM.Mem[A], RAM.Mem[A+1], RAM.Mem[A+2],RAM.Mem[A+3]);
      A = A + 4;
      end
      $finish;
