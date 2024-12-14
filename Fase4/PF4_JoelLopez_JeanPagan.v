@@ -357,7 +357,8 @@ always @(*) begin
 endcase
 //Data processing in_instruction and bit 20 = 0, S_enable
 if((in_instruction[27:25] == 3'b000) && (in_instruction[7] == 1'b0) && (in_instruction[4] == 1'b1) && (in_instruction[20] == 1'b0)) S_enable = 1'b0;
-
+//Data processing in_instruction and bit 20 = 1, S_enable
+else if((in_instruction[27:25] == 3'b000) && (in_instruction[7] == 1'b0) && (in_instruction[4] == 1'b1) && (in_instruction[20] == 1'b1)) S_enable = 1'b1;
 //load/store in_instruction indicator
 else if((in_instruction[27:25] == 3'b010) 
         || ((in_instruction[27:25] == 3'b011) && (in_instruction[4] == 1'b0)) 
@@ -377,8 +378,8 @@ else if((in_instruction[27:25] == 3'b010)
         end
 //branch/branch and link
   else if(in_instruction[27:25] == 3'b101) begin
-    if(!in_instruction[24]) begin B_instr = 1'b1; keyword = "B"; RF_enable = 1'b0; end
-    else begin BL_instr =1'b1; B_instr = 1'b1; keyword = "BL"; RF_enable = 1'b0; end
+    if(!in_instruction[24]) begin B_instr = 1'b1; keyword = "B"; RF_enable = 1'b0; S_enable = 1'b0; end
+    else begin BL_instr =1'b1; B_instr = 1'b1; keyword = "BL"; RF_enable = 1'b0; S_enable = 1'b0; end
     end
   else if(in_instruction == 32'b00000000000000000000000000000000) keyword = "NOP";
 end
@@ -491,8 +492,7 @@ always @(*) begin
     //    else keyword = {keyword, "AL"};
     //end
     endcase 
-  if((keyword[7:0] == 8'b01010011) || (keyword == "CMP") || (keyword == "CMN")) S_enable = 1;
-  else S_enable =0;
+  if((keyword == "CMP") || (keyword == "CMN")) S_enable = 1;
 end
   
   always @(*) begin
@@ -805,7 +805,7 @@ module PSR(
 
 always @(posedge clk) begin
     if (SE) PSR_flags <= {N_in, Z_in, C_in, V_in};
-    else PSR_flags <= 4'b0000;
+    //else PSR_flags <= 4'b0000;
 end
 
 endmodule
