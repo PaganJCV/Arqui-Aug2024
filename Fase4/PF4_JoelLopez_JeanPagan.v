@@ -108,16 +108,15 @@ endmodule
 /////////REGISTER FILE/////////
 
 module Register_File(
-        input LE, clk,
-        input [31:0] PC,PW,
+        input LE, clk, BranchL,
+        input [31:0] PC,PW, next_pc,
         input [3:0] RD,RB,RA,RW,
         output [31:0] PD,PB,PA
         );
 
         wire [15:0] regnum;
         wire [31:0] Q0,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10,Q11,Q12,Q13,Q14,Q15;
-
-        decoder decoder1(.regnum(regnum),.LE(LE),.RW(RW));
+        decoder decoder1(.regnum(regnum),.LE(LE), .BranchL(BranchL), .RW(RW));
 
         register R0(.LE(regnum[0]), .clk(clk), .PW(PW), .Q(Q0));
         register R1(.LE(regnum[1]), .clk(clk), .PW(PW), .Q(Q1));
@@ -133,7 +132,7 @@ module Register_File(
         register R11(.LE(regnum[11]), .clk(clk), .PW(PW), .Q(Q11));
         register R12(.LE(regnum[12]), .clk(clk), .PW(PW), .Q(Q12));
         register R13(.LE(regnum[13]), .clk(clk), .PW(PW), .Q(Q13));
-        register R14(.LE(regnum[14]), .clk(clk), .PW(PW), .Q(Q14));
+        register R14(.LE(regnum[14]), .clk(clk), .PW((BranchL) ? next_pc : PW), .Q(Q14));
         register R15(.LE(regnum[15]), .clk(clk), .PW(PC), .Q(Q15));
 
         in16out1mux mux1(.Y(PA),.R(RA),.Q0(Q0),.Q1(Q1),.Q2(Q2),.Q3(Q3),.Q4(Q4),.Q5(Q5),.Q6(Q6),.Q7(Q7),.Q8(Q8),.Q9(Q9),.Q10(Q10),.Q11(Q11),.Q12(Q12),.Q13(Q13),.Q14(Q14),.Q15(Q15));
@@ -145,12 +144,13 @@ module Register_File(
 
     module decoder (
         output reg[15:0] regnum,
-        input LE,
+        input LE, BranchL,
         input [3:0] RW
         );
         always @(*)
             begin
-                if(LE) begin
+               if(BranchL) regnum = 16'b0100000000000000; 
+               else if(LE) begin
                     case(RW)
                     4'b0000: regnum = 16'b0000000000000001;
                     4'b0001: regnum = 16'b0000000000000010;
@@ -851,11 +851,11 @@ module ConditionHandler (
         Branch = 1'b0;
         BranchL = 1'b0;
 
-      if (in_B_instr && cond_true) Branch = 1'b1;
-      else if (in_BL_instr && cond_true) begin
+      if (in_BL_instr && cond_true) begin
             Branch = 1'b1;
             BranchL = 1'b1;
         end
+      else if (in_B_instr && cond_true) Branch = 1'b1;
     end
 
 endmodule
